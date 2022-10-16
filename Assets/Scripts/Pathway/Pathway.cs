@@ -20,7 +20,7 @@ public class Pathway : MonoBehaviour
             for (idx = 1; idx < waypoints.Length; idx++)
             {
                 // Draw blue lines along pathway in edit mode
-                Debug.DrawLine(waypoints[idx - 1].transform.position, waypoints[idx].transform.position, Color.blue);
+                Debug.DrawLine(waypoints[idx - 1].transform.position, waypoints[idx].transform.position, Color.red);
             }
         }
     }
