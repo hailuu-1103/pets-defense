@@ -1,0 +1,3 @@
+[submodule "Assets/GameFoundation"]
+	path = Assets/GameFoundation
+	url = git@github.com:hailuu-1103/base-code.git
