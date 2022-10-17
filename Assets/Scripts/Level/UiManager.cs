@@ -22,7 +22,8 @@ public class UiManager : MonoBehaviour
     public GameObject levelUI;
     // Avaliable gold amount
     public Text goldAmount;
-
+    // Add sound effect
+    private AudioSource audioSource;
     // Is game paused?
     private bool paused;
 
@@ -55,6 +56,9 @@ public class UiManager : MonoBehaviour
     /// </summary>
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+
+        audioSource.Play();
         GoToLevel();
     }
 
@@ -63,6 +67,7 @@ public class UiManager : MonoBehaviour
     /// </summary>
     void Update()
     {
+
         if (paused == false)
         {
             // Pause on escape button
