@@ -24,6 +24,7 @@ namespace Ai.Attacks
             
         }
         
+
         private void Update()
         {
             if (this.cooldownCounter < this.cooldown)
@@ -48,13 +49,15 @@ namespace Ai.Attacks
             var speed = target.GetComponent<NavAgent>().speed;
             if (target != null)
             {
-                speed                                 *= 0.8f;
+                speed*= 0.8f;
                 target.GetComponent<NavAgent>().speed =  speed;
+
                 // Create arrow
                 GameObject arrow  = Instantiate(arrowPrefab, firePoint.position, firePoint.rotation);
                 IBullet    bullet = arrow.GetComponent<IBullet>();
                 bullet.SetDamage(damage);
                 bullet.Fire(target);
+                
                 if (anim != null)
                 {
                     anim.Play("AttackRanged");
