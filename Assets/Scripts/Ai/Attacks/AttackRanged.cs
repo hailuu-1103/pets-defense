@@ -61,9 +61,13 @@ public class AttackRanged : MonoBehaviour, IAttack
     /// <param name="target">Target.</param>
     private void Fire(Transform target)
     {
+        var speed = target.GetComponent<NavAgent>().speed;
         if (target != null)
         {
+            speed *= 0.8f;
             // Create arrow
+            target.GetComponent<NavAgent>().speed = speed;
+
             var arrow  = Instantiate(this.arrowPrefab, this.firePoint.position, this.firePoint.rotation);
             var bullet = arrow.GetComponent<IBullet>();
             bullet.SetDamage(this.damage);
