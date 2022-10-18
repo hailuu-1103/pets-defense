@@ -16,8 +16,7 @@ public class UiManager : MonoBehaviour
     public GameObject pauseMenu;
     // Defeat menu canvas
     public GameObject defeatMenu;
-    // Victory menu canvas
-    public GameObject victoryMenu;
+   
     // Level interface
     public GameObject levelUI;
     // Avaliable gold amount
@@ -47,7 +46,7 @@ public class UiManager : MonoBehaviour
     /// </summary>
     void Awake()
     {
-        Debug.Assert(pauseMenu && defeatMenu && victoryMenu && levelUI && goldAmount, "Wrong initial parameters");
+        Debug.Assert(pauseMenu && defeatMenu &&  levelUI && goldAmount, "Wrong initial parameters");
     }
 
     /// <summary>
@@ -151,7 +150,6 @@ public class UiManager : MonoBehaviour
     {
         pauseMenu.SetActive(false);
         defeatMenu.SetActive(false);
-        victoryMenu.SetActive(false);
         levelUI.SetActive(false);
     }
 
@@ -204,7 +202,6 @@ public class UiManager : MonoBehaviour
     {
         PauseGame(true);
         CloseAllUI();
-        victoryMenu.SetActive(true);
     }
 
     /// <summary>
