@@ -4,7 +4,7 @@ namespace Common
 
     public class CameraSizeHelper : MonoBehaviour
     {
-        [SerializeField] private float horizontalScreenSizeOffset; // Max distance of screen size in horizontal
+        [SerializeField] private float verticleScreenSizeOffset; // Max distance of screen size in horizontal
         
         private Camera mainCamera;
         private void Start()
@@ -14,8 +14,8 @@ namespace Common
         }
         private void SetCamSize()
         {
-            var unitsPerPixel     = this.horizontalScreenSizeOffset / Screen.width;
-            var desiredHalfHeight = 0.5f * unitsPerPixel * Screen.height;
+            var unitsPerPixel     = this.verticleScreenSizeOffset / Screen.height;
+            var desiredHalfHeight = 0.5f * unitsPerPixel * Screen.width;
             this.mainCamera.orthographicSize = desiredHalfHeight;
         }
     }
