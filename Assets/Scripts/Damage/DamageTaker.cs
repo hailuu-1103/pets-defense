@@ -19,15 +19,24 @@ public class DamageTaker : MonoBehaviour
     // Visualisation of hit
     private bool hitCoroutine;
 
+    
+    private HealthBar healthbar;
+
     /// <summary>
     /// Awake this instance.
     /// </summary>
     void Awake()
     {
+
+        healthbar = GetComponentInChildren<HealthBar>();
         currentHitpoints = hitpoints;
+        healthbar.SetMaxHealth(hitpoints);
+        
+
         sprite = GetComponentInChildren<SpriteRenderer>();
         Debug.Assert(sprite, "Wrong initial parameters");
     }
+
 
     /// <summary>
     /// Take damage.
@@ -39,6 +48,8 @@ public class DamageTaker : MonoBehaviour
         {
             // Still alive
             currentHitpoints -= damage;
+            healthbar.SetHealth(currentHitpoints);
+
             // If no coroutine now
             if (hitCoroutine == false)
             {
