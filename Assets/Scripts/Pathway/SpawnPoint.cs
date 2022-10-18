@@ -93,6 +93,7 @@ public class SpawnPoint : MonoBehaviour
             if (counter >= nextWave.timeBeforeWave)
             {
                 counter = 0f;
+
                 // Start new wave
                 StartCoroutine(RunWave());
             }

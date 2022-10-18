@@ -22,9 +22,6 @@ public class BulletArrow : MonoBehaviour, IBullet
     public float ballisticOffset = 0.5f;
     // Do not rotate bullet during fly
     public bool freezeRotation = false;
-
-    [SerializeField]
-    private AudioSource audioSource;
     
 
     // From this position bullet was fired
@@ -60,9 +57,7 @@ public class BulletArrow : MonoBehaviour, IBullet
     /// <param name="target">Target.</param>
     public void Fire(Transform target)
     {
-        audioSource = GetComponent<AudioSource>();
 
-        audioSource.Play();
         sprite = GetComponent<SpriteRenderer>();
         // Disable sprite on first frame beqause we do not know fly direction yet
         sprite.enabled = false;
@@ -107,14 +102,9 @@ public class BulletArrow : MonoBehaviour, IBullet
                 if (damageTaker != null)
                 {
                     damageTaker.TakeDamage(damage);
-                    if (counter > 1)
-                    {
-                        damageTaker.TakeDamage(damage/2);
-                        counter -= Time.deltaTime;
-                    }
-
                 }
                 
+
             }
             // Destroy bullet
             Destroy(gameObject);
