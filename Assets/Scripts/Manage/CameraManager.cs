@@ -1,6 +1,5 @@
-namespace Level
+namespace Manage
 {
-    using System;
     using UnityEngine;
 
     public class CameraManager : MonoBehaviour
