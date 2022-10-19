@@ -1,15 +1,26 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Manage;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using Zenject;
 
 /// <summary>
 /// User interface and events manager.
 /// </summary>
-public class UiManager : MonoBehaviour
+public class UIManager : MonoBehaviour
 {
+    [SerializeField] private Button saveBtn;
+
+    #region Zenject
+
+    private SaveLoadSystem saveLoadSystem;
+    private GameState      gameState;
+
+    #endregion
+    
     // Next level scene name
     public string nextLevel;
     // Pause menu canvas
@@ -19,67 +30,77 @@ public class UiManager : MonoBehaviour
    
     // Level interface
     public GameObject levelUI;
-    // Avaliable gold amount
+    // Available gold amount
     public Text goldAmount;
 
+    [Inject]
+    private void Construct(SaveLoadSystem system, GameState state)
+    {
+        this.saveLoadSystem = system;
+        this.gameState      = state;
+    }
     // Is game paused?
     private bool paused;
 
     /// <summary>
     /// Raises the enable event.
     /// </summary>
-    void OnEnable()
+    private void OnEnable()
     {
-        EventManager.StartListening("UnitDie", UnitDie);
+        EventManager.StartListening("UnitDie", this.UnitDie);
+        this.saveBtn.onClick.AddListener(this.OnClickSaveButton);
     }
 
     /// <summary>
     /// Raises the disable event.
     /// </summary>
-    void OnDisable()
+    private void OnDisable()
     {
-        EventManager.StopListening("UnitDie", UnitDie);
+        EventManager.StopListening("UnitDie", this.UnitDie);
+        this.saveBtn.onClick.RemoveListener(this.OnClickSaveButton);
     }
 
     /// <summary>
     /// Awake this instance.
     /// </summary>
-    void Awake()
+    private void Awake()
     {
-        Debug.Assert(pauseMenu && defeatMenu &&  levelUI && goldAmount, "Wrong initial parameters");
+        Debug.Assert(this.pauseMenu && this.defeatMenu && this.levelUI && this.goldAmount, "Wrong initial parameters");
     }
 
     /// <summary>
     /// Start this instance.
     /// </summary>
-    void Start()
+    private void Start()
     {
-        GoToLevel();
+        this.SetGold();
+        this.GoToLevel();
+        Debug.Log(this.gameState);
     }
 
     /// <summary>
     /// Update this instance.
     /// </summary>
-    void Update()
+    private void Update()
     {
-        if (paused == false)
+        if (this.paused == false)
         {
             // Pause on escape button
             if (Input.GetButtonDown("Cancel") == true)
             {
-                PauseGame(true);
-                GoToPauseMenu();
+                this.PauseGame(true);
+                this.GoToPauseMenu();
             }
             // User press mouse button
             if (Input.GetMouseButtonDown(0) == true)
             {
                 // Check if pointer over UI components
                 GameObject hittedObj = null;
-                PointerEventData pointerData = new PointerEventData(EventSystem.current);
+                var pointerData = new PointerEventData(EventSystem.current);
                 pointerData.position = Input.mousePosition;
-                List<RaycastResult> results = new List<RaycastResult>();
+                var results = new List<RaycastResult>();
                 EventSystem.current.RaycastAll(pointerData, results);
-                foreach (RaycastResult res in results)
+                foreach (var res in results)
                 {
                     if (res.gameObject.CompareTag("ActionIcon"))
                     {
@@ -90,8 +111,8 @@ public class UiManager : MonoBehaviour
                 if (results.Count <= 0) // No UI components on pointer
                 {
                     // Check if pointer over colliders
-                    RaycastHit2D[] hits = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition), Camera.main.transform.forward);
-                    foreach (RaycastHit2D hit in hits)
+                    var hits = Physics2D.RaycastAll(Camera.main.ScreenToWorldPoint(Input.mousePosition), Camera.main.transform.forward);
+                    foreach (var hit in hits)
                     {
                         // If this is tower collider
                         if (hit.collider.gameObject.CompareTag("Tower"))
@@ -122,8 +143,8 @@ public class UiManager : MonoBehaviour
     /// </summary>
     public void NewGame()
     {
-        GoToLevel();
-        PauseGame(false);
+        this.GoToLevel();
+        this.PauseGame(false);
     }
 
     /// <summary>
@@ -131,8 +152,8 @@ public class UiManager : MonoBehaviour
     /// </summary>
     public void ResumeGame()
     {
-        GoToLevel();
-        PauseGame(false);
+        this.GoToLevel();
+        this.PauseGame(false);
     }
 
     /// <summary>
@@ -140,7 +161,7 @@ public class UiManager : MonoBehaviour
     /// </summary>
     public void GoToMainMenu()
     {
-        LoadScene("MainMenu");
+        this.LoadScene("MainMenu");
     }
 
     /// <summary>
@@ -148,60 +169,60 @@ public class UiManager : MonoBehaviour
     /// </summary>
     private void CloseAllUI()
     {
-        pauseMenu.SetActive(false);
-        defeatMenu.SetActive(false);
-        levelUI.SetActive(false);
+        this.pauseMenu.SetActive(false);
+        this.defeatMenu.SetActive(false);
+        // this.levelUI.SetActive(false);
     }
 
     /// <summary>
-    /// Pauses the game.
+    /// Pause the game.
     /// </summary>
     /// <param name="pause">If set to <c>true</c> pause.</param>
     private void PauseGame(bool pause)
     {
-        paused = pause;
+        this.paused = pause;
         // Stop the time on pause
         Time.timeScale = pause ? 0f : 1f;
         EventManager.TriggerEvent("GamePaused", null, pause.ToString());
     }
 
     /// <summary>
-    /// Gos to pause menu.
+    /// Go to pause menu.
     /// </summary>
     private void GoToPauseMenu()
     {
-        PauseGame(true);
-        CloseAllUI();
-        pauseMenu.SetActive(true);
+        this.PauseGame(true);
+        this.CloseAllUI();
+        this.pauseMenu.SetActive(true);
     }
 
     /// <summary>
-    /// Gos to level.
+    /// Go to level.
     /// </summary>
     private void GoToLevel()
     {
-        CloseAllUI();
-        levelUI.SetActive(true);
-        PauseGame(false);
+        this.CloseAllUI();
+        this.levelUI.SetActive(true);
+        this.PauseGame(false);
     }
 
     /// <summary>
-    /// Gos to defeat menu.
+    /// Go to defeat menu.
     /// </summary>
     public void GoToDefeatMenu()
     {
-        PauseGame(true);
-        CloseAllUI();
-        defeatMenu.SetActive(true);
+        this.PauseGame(true);
+        this.CloseAllUI();
+        this.defeatMenu.SetActive(true);
     }
 
     /// <summary>
-    /// Gos to victory menu.
+    /// Go to victory menu.
     /// </summary>
     public void GoToVictoryMenu()
     {
-        PauseGame(true);
-        CloseAllUI();
+        this.PauseGame(true);
+        this.CloseAllUI();
     }
 
     /// <summary>
@@ -209,36 +230,24 @@ public class UiManager : MonoBehaviour
     /// </summary>
     public void GoToNextLevel()
     {
-        LoadScene(nextLevel);
+        this.LoadScene(this.nextLevel);
     }
 
     /// <summary>
-    /// Restarts current level.
+    /// Restart current level.
     /// </summary>
     public void RestartLevel()
     {
-        string activeScene = SceneManager.GetActiveScene().name;
-        LoadScene(activeScene);
-    }
-
-    /// <summary>
-    /// Gets current gold amount.
-    /// </summary>
-    /// <returns>The gold.</returns>
-    private int GetGold()
-    {
-        int gold;
-        int.TryParse(goldAmount.text, out gold);
-        return gold;
+        var activeScene = SceneManager.GetActiveScene().name;
+        this.LoadScene(activeScene);
     }
 
     /// <summary>
     /// Sets gold amount.
     /// </summary>
-    /// <param name="gold">Gold.</param>
-    private void SetGold(int gold)
+    private void SetGold()
     {
-        goldAmount.text = gold.ToString();
+        this.goldAmount.text = this.gameState.goldCollected.ToString();
     }
 
     /// <summary>
@@ -247,7 +256,7 @@ public class UiManager : MonoBehaviour
     /// <param name="gold">Gold.</param>
     private void AddGold(int gold)
     {
-        SetGold(GetGold() + gold);
+        this.gameState.goldCollected += gold;
     }
 
     /// <summary>
@@ -255,16 +264,17 @@ public class UiManager : MonoBehaviour
     /// </summary>
     /// <returns><c>true</c>, if gold was spent, <c>false</c> otherwise.</returns>
     /// <param name="cost">Cost.</param>
-    public bool SpendGold(int cost)
+    public bool CanSpendGold(int cost)
     {
-        bool res = false;
-        int currentGold = GetGold();
+        var result      = false;
+        var currentGold = this.gameState.goldCollected;
         if (currentGold >= cost)
         {
-            SetGold(currentGold - cost);
-            res = true;
+            this.gameState.goldCollected -= cost;
+            this.SetGold();
+            result = true;
         }
-        return res;
+        return result;
     }
 
     /// <summary>
@@ -277,12 +287,21 @@ public class UiManager : MonoBehaviour
         // If this is enemy
         if (obj.CompareTag("Enemy"))
         {
-            Price price = obj.GetComponent<Price>();
+            var price = obj.GetComponent<Price>();
             if (price != null)
             {
                 // Add gold for enemy kill
-                AddGold(price.price);
+                this.AddGold(price.price);
             }
         }
     }
+
+    #region Callback
+
+    private void OnClickSaveButton()
+    {
+        this.saveLoadSystem.SaveToFile();
+    }
+
+    #endregion
 }
