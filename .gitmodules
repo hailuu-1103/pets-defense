@@ -1,3 +1,6 @@
+[submodule "base-code"]
+	path = base-code
+	url = https://github.com/hailuu-1103/base-code.git
 [submodule "Assets/GameFoundation"]
 	path = Assets/GameFoundation
-	url = git@github.com:hailuu-1103/base-code.git
+	url = https://github.com/hailuu-1103/base-code.git
