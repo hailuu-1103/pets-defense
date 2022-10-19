@@ -6,22 +6,23 @@
 public class LevelManager : MonoBehaviour
 {
     // User interface manager
-    private UiManager uiManager;
+    private UIManager uiManager;
     // Nymbers of enemy spawners in this level
     private int spawnNumbers;
 
+    
     /// <summary>
     /// Awake this instance.
     /// </summary>
     void Awake()
     {
-        uiManager = FindObjectOfType<UiManager>();
-        spawnNumbers = FindObjectsOfType<SpawnPoint>().Length;
-        if (spawnNumbers <= 0)
+        this.uiManager = FindObjectOfType<UIManager>();
+        this.spawnNumbers = FindObjectsOfType<SpawnPoint>().Length;
+        if (this.spawnNumbers <= 0)
         {
             Debug.LogError("Have no spawners");
         }
-        Debug.Assert(uiManager, "Wrong initial parameters");
+        Debug.Assert(this.uiManager, "Wrong initial parameters");
     }
 
     /// <summary>
@@ -29,8 +30,8 @@ public class LevelManager : MonoBehaviour
     /// </summary>
     void OnEnable()
     {
-        EventManager.StartListening("Captured", Captured);
-        EventManager.StartListening("AllEnemiesAreDead", AllEnemiesAreDead);
+        EventManager.StartListening("Captured", this.Captured);
+        EventManager.StartListening("AllEnemiesAreDead", this.AllEnemiesAreDead);
     }
 
     /// <summary>
@@ -38,8 +39,8 @@ public class LevelManager : MonoBehaviour
     /// </summary>
     void OnDisable()
     {
-        EventManager.StopListening("Captured", Captured);
-        EventManager.StopListening("AllEnemiesAreDead", AllEnemiesAreDead);
+        EventManager.StopListening("Captured", this.Captured);
+        EventManager.StopListening("AllEnemiesAreDead", this.AllEnemiesAreDead);
     }
 
     /// <summary>
@@ -102,7 +103,7 @@ public class LevelManager : MonoBehaviour
     private void Captured(GameObject obj, string param)
     {
         // Defeat
-        uiManager.GoToDefeatMenu();
+        this.uiManager.GoToDefeatMenu();
     }
 
     /// <summary>
@@ -112,12 +113,12 @@ public class LevelManager : MonoBehaviour
     /// <param name="param">Parameter.</param>
     private void AllEnemiesAreDead(GameObject obj, string param)
     {
-        spawnNumbers--;
+        this.spawnNumbers--;
         // Enemies dead at all spawners
-        if (spawnNumbers <= 0)
+        if (this.spawnNumbers <= 0)
         {
             // Victory
-            uiManager.GoToVictoryMenu();
+            this.uiManager.GoToVictoryMenu();
         }
     }
 }
