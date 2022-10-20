@@ -101,9 +101,11 @@ public class BulletArrow : MonoBehaviour, IBullet
                 DamageTaker damageTaker = target.GetComponent<DamageTaker>();
                 if (damageTaker != null)
                 {
-                    damageTaker.TakeDamage(damage);
+                    //damageTaker.TakeDamage(damage);
+                    damageTaker.burnDamage(3, 1);
                 }
                 
+
 
             }
             // Destroy bullet

@@ -64,6 +64,14 @@ public class DamageTaker : MonoBehaviour
             Die();
         }
     }
+    
+    public void burnDamage(int time, int damage)
+    {
+        StartCoroutine(burnDamage(damage));
+    }
+    
+    
+
 
     /// <summary>
     /// Die this instance.
@@ -91,5 +99,15 @@ public class DamageTaker : MonoBehaviour
         }
         sprite.color = originColor;
         hitCoroutine = false;
+    }
+
+    IEnumerator burnDamage(int damage)
+    {
+        while (true)
+        {
+        TakeDamage(damage);
+        yield return new WaitForSeconds(1);
+        }
+        
     }
 }
