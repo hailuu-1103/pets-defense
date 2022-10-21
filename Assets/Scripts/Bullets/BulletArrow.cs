@@ -39,8 +39,9 @@ public class BulletArrow : MonoBehaviour, IBullet
     // Image of this bullet
     private SpriteRenderer sprite;
 
+    [SerializeField]
+    private string type;
     
-
 
     /// <summary>
     /// Set damage amount for this bullet.
@@ -102,7 +103,16 @@ public class BulletArrow : MonoBehaviour, IBullet
                 if (damageTaker != null)
                 {
                     //damageTaker.TakeDamage(damage);
-                    damageTaker.burnDamage(3, 1);
+                    
+                    if (type.Contains("burn"))
+                    {
+                        damageTaker.burnDamage(3, 1);
+                    }else if (type.Contains("slow"))
+                    {
+                        damageTaker.TakeDamage(1, "slow");
+
+                    }
+
                 }
                 
 

@@ -65,8 +65,39 @@ public class DamageTaker : MonoBehaviour
         }
     }
     
+
+    public void TakeDamage(int damage, string status)
+    {
+        if (status.Equals("slow"))
+        {
+            if (currentHitpoints > damage)
+            {
+                // Still alive
+                currentHitpoints -= damage;
+                healthbar.SetHealth(currentHitpoints);
+                healthbar.SetStatus("slow");
+                // If no coroutine now
+                if (hitCoroutine == false)
+                {
+                    // Damage visualisation
+                    StartCoroutine(DisplayDamage());
+                }
+            }
+            else
+            {
+                // Die
+                currentHitpoints = 0;
+                Die();
+            }
+        }
+
+    }
+
+
     public void burnDamage(int time, int damage)
     {
+        healthbar.SetStatus("burning");
+
         StartCoroutine(burnDamage(damage));
     }
     
