@@ -2,7 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Manage;
+using Signals;
 using UnityEngine;
+using Zenject;
 using Random = UnityEngine.Random;
 
 /// <summary>
@@ -24,6 +27,12 @@ public class SpawnPoint : MonoBehaviour
 
     [SerializeField] private Transform enemyHolder;
 
+    #region Zenject
+
+    private SignalBus signalBus;
+    private GameState gameState;
+
+    #endregion
     // Enemies will have different speed in specified interval
     public float speedRandomizer = 0.2f;
     // Delay between enemies spawn in wave
@@ -44,7 +53,12 @@ public class SpawnPoint : MonoBehaviour
     // Buffer with active spawned enemies
     private List<GameObject> activeEnemies = new();
 
-
+    [Inject]
+    private void Init(GameState state, SignalBus signal)
+    {
+        this.gameState = state;
+        this.signalBus = signal;
+    }
     /// <summary>
     /// Awake this instance.
     /// </summary>
@@ -153,7 +167,9 @@ public class SpawnPoint : MonoBehaviour
             // Wait for delay before next enemy run
             yield return new WaitForSeconds(this.unitSpawnDelay);
         }
-
+        
+        this.gameState.wave += 0.5f;
+        this.signalBus.Fire<NextWaveSignal>();
         this.GetNextWave();
         this.waveInProgress = false;
     }
@@ -166,7 +182,7 @@ public class SpawnPoint : MonoBehaviour
     private void UnitDie(GameObject obj, string param)
     {
         // If this is active enemy
-        if (this.activeEnemies.Contains(obj) == true)
+        if (this.activeEnemies.Contains(obj))
         {
             // Remove it from buffer
             this.activeEnemies.Remove(obj);
