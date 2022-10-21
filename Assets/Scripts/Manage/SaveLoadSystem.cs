@@ -17,7 +17,6 @@ namespace Manage
 
         #endregion
 
-        public UserTempData userTempData = new();
 
         private const string       FilePath = "Assets/StreamingAssets/TempData";
 
@@ -30,26 +29,24 @@ namespace Manage
         public void SaveToFile()
         {
             this.SetUpTempData();
-            JsonUtil.Save(this.userTempData, $"{FilePath}/Temp.json");
+            JsonUtil.Save(this.gameState, $"{FilePath}/Temp.json");
             Debug.Log($"Save data to file: {FilePath}/Temp.json");
         }
         public void ReadFromFile()
         {
-            this.userTempData = JsonUtil.Load<UserTempData>($"{FilePath}/Temp.json");
+            this.gameState = JsonUtil.Load<GameState>($"{FilePath}/Temp.json");
             Debug.Log($"Load data from file {FilePath}/Temp.json successfully!");
         }
         private void SetUpTempData()
         {
-            this.userTempData.gold  = this.gameState.goldCollected;
-            this.userTempData.score = this.gameState.scoreCollected;
             for (var i = 0; i < this.enemyHolder.childCount; i++)
             {
                 var enemy     = this.enemyHolder.GetChild(i);
                 var enemyName = enemy.name.Replace("(Clone)", "").Trim();
                 var enemyPos  = enemy.GetComponent<Transform>().position;
-                this.userTempData.enemies.Add(new EnemyData { name = enemyName, horizontalPosition = enemyPos.x, verticalPosition = enemyPos.y });
+                this.gameState.enemies.Add(new EnemyData { name = enemyName, horizontalPosition = enemyPos.x, verticalPosition = enemyPos.y });
             }
         }
-        public void Start() { this.userTempData ??= new UserTempData(); }
+        public void Start() { this.gameState ??= new GameState(); }
     }
 }
