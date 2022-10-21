@@ -1,6 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Manage;
+using Signals;
+using TMPro;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -16,29 +19,38 @@ public class UIManager : MonoBehaviour
 
     #region Zenject
 
+    private SignalBus      signalBus;
     private SaveLoadSystem saveLoadSystem;
     private GameState      gameState;
 
     #endregion
-    
+
     // Next level scene name
-    public string nextLevel;
+    [SerializeField] private string nextLevel;
+
     // Pause menu canvas
-    public GameObject pauseMenu;
+    [SerializeField] private GameObject pauseMenu;
+
     // Defeat menu canvas
-    public GameObject defeatMenu;
-   
+    [SerializeField] private GameObject defeatMenu;
+
     // Level interface
-    public GameObject levelUI;
+    [SerializeField] private GameObject levelUI;
+
     // Available gold amount
-    public Text goldAmount;
+    [SerializeField] private TextMeshProUGUI goldTxt;
+
+    [SerializeField] private TextMeshProUGUI waveTxt;
+
 
     [Inject]
-    private void Construct(SaveLoadSystem system, GameState state)
+    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state)
     {
         this.saveLoadSystem = system;
         this.gameState      = state;
+        this.signalBus      = signal;
     }
+
     // Is game paused?
     private bool paused;
 
@@ -47,6 +59,7 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void OnEnable()
     {
+        this.signalBus.Subscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StartListening("UnitDie", this.UnitDie);
         this.saveBtn.onClick.AddListener(this.OnClickSaveButton);
     }
@@ -56,6 +69,7 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
+        this.signalBus.TryUnsubscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StopListening("UnitDie", this.UnitDie);
         this.saveBtn.onClick.RemoveListener(this.OnClickSaveButton);
     }
@@ -63,10 +77,7 @@ public class UIManager : MonoBehaviour
     /// <summary>
     /// Awake this instance.
     /// </summary>
-    private void Awake()
-    {
-        Debug.Assert(this.pauseMenu && this.defeatMenu && this.levelUI && this.goldAmount, "Wrong initial parameters");
-    }
+    private void Awake() { Debug.Assert(this.pauseMenu && this.defeatMenu && this.levelUI && this.goldTxt, "Wrong initial parameters"); }
 
     /// <summary>
     /// Start this instance.
@@ -75,7 +86,7 @@ public class UIManager : MonoBehaviour
     {
         this.SetGold();
         this.GoToLevel();
-        Debug.Log(this.gameState);
+        this.waveTxt.text = "1";
     }
 
     /// <summary>
@@ -86,17 +97,18 @@ public class UIManager : MonoBehaviour
         if (this.paused == false)
         {
             // Pause on escape button
-            if (Input.GetButtonDown("Cancel") == true)
+            if (Input.GetButtonDown("Cancel"))
             {
                 this.PauseGame(true);
                 this.GoToPauseMenu();
             }
+
             // User press mouse button
-            if (Input.GetMouseButtonDown(0) == true)
+            if (Input.GetMouseButtonDown(0))
             {
                 // Check if pointer over UI components
-                GameObject hittedObj = null;
-                var pointerData = new PointerEventData(EventSystem.current);
+                GameObject hittedObj   = null;
+                var        pointerData = new PointerEventData(EventSystem.current);
                 pointerData.position = Input.mousePosition;
                 var results = new List<RaycastResult>();
                 EventSystem.current.RaycastAll(pointerData, results);
@@ -108,6 +120,7 @@ public class UIManager : MonoBehaviour
                         break;
                     }
                 }
+
                 if (results.Count <= 0) // No UI components on pointer
                 {
                     // Check if pointer over colliders
@@ -122,12 +135,17 @@ public class UIManager : MonoBehaviour
                         }
                     }
                 }
+
                 // Send message with user click data
                 EventManager.TriggerEvent("UserClick", hittedObj, null);
             }
         }
     }
-
+    private void SetUpWaveText()
+    {
+        // TODO Refactor CODE
+        this.waveTxt.text = Mathf.CeilToInt(this.gameState.wave).ToString();
+    }
     /// <summary>
     /// Stop current scene and load new scene
     /// </summary>
@@ -159,10 +177,7 @@ public class UIManager : MonoBehaviour
     /// <summary>
     /// Gos to main menu.
     /// </summary>
-    public void GoToMainMenu()
-    {
-        this.LoadScene("MainMenu");
-    }
+    public void GoToMainMenu() { this.LoadScene("MainMenu"); }
 
     /// <summary>
     /// Closes all UI canvases.
@@ -228,10 +243,7 @@ public class UIManager : MonoBehaviour
     /// <summary>
     /// Start next level.
     /// </summary>
-    public void GoToNextLevel()
-    {
-        this.LoadScene(this.nextLevel);
-    }
+    public void GoToNextLevel() { this.LoadScene(this.nextLevel); }
 
     /// <summary>
     /// Restart current level.
@@ -245,19 +257,13 @@ public class UIManager : MonoBehaviour
     /// <summary>
     /// Sets gold amount.
     /// </summary>
-    private void SetGold()
-    {
-        this.goldAmount.text = this.gameState.goldCollected.ToString();
-    }
+    private void SetGold() { this.goldTxt.text = this.gameState.goldCollected.ToString(); }
 
     /// <summary>
     /// Adds the gold.
     /// </summary>
     /// <param name="gold">Gold.</param>
-    private void AddGold(int gold)
-    {
-        this.gameState.goldCollected += gold;
-    }
+    private void AddGold(int gold) { this.gameState.goldCollected += gold; }
 
     /// <summary>
     /// Spends the gold if it is.
@@ -274,6 +280,7 @@ public class UIManager : MonoBehaviour
             this.SetGold();
             result = true;
         }
+
         return result;
     }
 
@@ -298,10 +305,7 @@ public class UIManager : MonoBehaviour
 
     #region Callback
 
-    private void OnClickSaveButton()
-    {
-        this.saveLoadSystem.SaveToFile();
-    }
+    private void OnClickSaveButton() { this.saveLoadSystem.SaveToFile(); }
 
     #endregion
 }

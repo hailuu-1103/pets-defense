@@ -7,6 +7,8 @@ namespace Installer
     {
         public override void InstallBindings()
         {
+            this.Container.DeclareSignal<NextWaveSignal>();
+            this.Container.DeclareSignal<LoadGameSignal>();
         }
     }
 }
