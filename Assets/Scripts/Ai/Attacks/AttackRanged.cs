@@ -20,6 +20,8 @@ public class AttackRanged : MonoBehaviour, IAttack
     private Animation anim;
     // Counter for cooldown calculation
     private float cooldownCounter;
+    
+
 
     /// <summary>
     /// Awake this instance.
@@ -65,6 +67,8 @@ public class AttackRanged : MonoBehaviour, IAttack
         if (target != null)
         {
             speed *= 0.8f;
+            
+
             // Create arrow
             target.GetComponent<NavAgent>().speed = speed;
 
