@@ -10,6 +10,11 @@ public class HealthBar : MonoBehaviour
 	public Gradient gradient;
 	public Image fill;
 
+	public GameObject slow;
+
+	public GameObject burning;
+    
+
 	public void SetMaxHealth(int health)
 	{
 		slider.maxValue = health;
@@ -24,5 +29,17 @@ public class HealthBar : MonoBehaviour
 
 		fill.color = gradient.Evaluate(slider.normalizedValue);
 	}
+
+	public void SetStatus(string status)
+    {
+        if (status.Equals("slow"))
+        {
+			slow.SetActive(true);
+
+        }else if (status.Equals("burning"))
+        {
+			burning.SetActive(true);
+        }
+    }
 
 }
