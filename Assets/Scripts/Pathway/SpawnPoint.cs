@@ -1,7 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using Manage;
+using Signals;
 using UnityEngine;
-using System.Linq;
+using Zenject;
+using Random = UnityEngine.Random;
 
 /// <summary>
 /// Enemy spawner.
@@ -11,7 +16,7 @@ public class SpawnPoint : MonoBehaviour
     /// <summary>
     /// Enemy wave structure.
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class Wave
     {
         // Delay before wave run
@@ -20,8 +25,14 @@ public class SpawnPoint : MonoBehaviour
         public List<GameObject> enemies;
     }
 
-    // If enemy not set, this folder will use to get random enemy
-    public string enemiesResourceFolder = "Prefabs/Enemies";
+    [SerializeField] private Transform enemyHolder;
+
+    #region Zenject
+
+    private SignalBus signalBus;
+    private GameState gameState;
+
+    #endregion
     // Enemies will have different speed in specified interval
     public float speedRandomizer = 0.2f;
     // Delay between enemies spawn in wave
@@ -38,72 +49,77 @@ public class SpawnPoint : MonoBehaviour
     // Wave started
     private bool waveInProgress;
     // List for random enemy generation
-    private List<GameObject> enemyPrefabs;
+    [SerializeField] private List<GameObject> enemyPrefabs = new();
     // Buffer with active spawned enemies
-    private List<GameObject> activeEnemies = new List<GameObject>();
+    private List<GameObject> activeEnemies = new();
 
+    [Inject]
+    private void Init(GameState state, SignalBus signal)
+    {
+        this.gameState = state;
+        this.signalBus = signal;
+    }
     /// <summary>
     /// Awake this instance.
     /// </summary>
-    void Awake ()
+    private void Awake ()
     {
-        path = GetComponentInParent<Pathway>();
-        // Load enemies prefabs from specified directory
-        enemyPrefabs = Resources.LoadAll<GameObject>(enemiesResourceFolder).ToList();
-        Debug.Assert((path != null) && (enemyPrefabs != null), "Wrong initial parameters");
+        this.path = this.GetComponentInParent<Pathway>();
+        
+        Debug.Assert((this.path != null) && (this.enemyPrefabs != null), "Wrong initial parameters");
     }
 
     /// <summary>
     /// Raises the enable event.
     /// </summary>
-    void OnEnable()
+    private void OnEnable()
     {
-        EventManager.StartListening("UnitDie", UnitDie);
+        EventManager.StartListening("UnitDie", this.UnitDie);
     }
 
     /// <summary>
     /// Raises the disable event.
     /// </summary>
-    void OnDisable()
+    private void OnDisable()
     {
-        EventManager.StopListening("UnitDie", UnitDie);
+        EventManager.StopListening("UnitDie", this.UnitDie);
     }
 
     /// <summary>
     /// Start this instance.
     /// </summary>
-    void Start()
+    private void Start()
     {
-        if (waves.Count > 0)
+        if (this.waves.Count > 0)
         {
             // Start from first wave
-            nextWave = waves[0];
+            this.nextWave = this.waves[0];
         }
     }
 
     /// <summary>
     /// Update this instance.
     /// </summary>
-    void Update()
+    private void Update()
     {
         // Wait for next wave
-        if ((nextWave != null) && (waveInProgress == false))
+        if ((this.nextWave != null) && (this.waveInProgress == false))
         {
-            counter += Time.deltaTime;
-            if (counter >= nextWave.timeBeforeWave)
+            this.counter += Time.deltaTime;
+            if (this.counter >= this.nextWave.timeBeforeWave)
             {
-                counter = 0f;
+                this.counter = 0f;
 
                 // Start new wave
-                StartCoroutine(RunWave());
+                this.StartCoroutine(this.RunWave());
             }
         }
         // If all spawned enemies are dead
-        if ((nextWave == null) && (activeEnemies.Count <= 0))
+        if ((this.nextWave == null) && (this.activeEnemies.Count <= 0))
         {
             EventManager.TriggerEvent("AllEnemiesAreDead", null, null);
             // Turn off spawner
-            enabled = false;
+            this.enabled = false;
         }
     }
 
@@ -112,14 +128,14 @@ public class SpawnPoint : MonoBehaviour
     /// </summary>
     private void GetNextWave()
     {
-        int idx = waves.IndexOf(nextWave) + 1;
-        if (idx < waves.Count)
+        var idx = this.waves.IndexOf(this.nextWave) + 1;
+        if (idx < this.waves.Count)
         {
-            nextWave = waves[idx];
+            this.nextWave = this.waves[idx];
         }
         else
         {
-            nextWave = null;
+            this.nextWave = null;
         }
     }
 
@@ -129,30 +145,33 @@ public class SpawnPoint : MonoBehaviour
     /// <returns>The wave.</returns>
     private IEnumerator RunWave()
     {
-        waveInProgress = true;
-        foreach (GameObject enemy in nextWave.enemies)
+        this.waveInProgress = true;
+        foreach (var enemy in this.nextWave.enemies)
         {
             GameObject prefab = null;
             prefab = enemy;
             // If enemy prefab not specified - get random enemy
             if (prefab == null)
             {
-                prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Count)];
+                prefab = this.enemyPrefabs[Random.Range(0, this.enemyPrefabs.Count)];
             }
             // Create enemy
-            GameObject newEnemy = Instantiate(prefab, transform.position, transform.rotation);
+            var newEnemy = Instantiate(prefab, this.transform.position, this.transform.rotation, this.enemyHolder);
             // Set pathway
-            newEnemy.GetComponent<AiStatePatrol>().path = path;
-            NavAgent agent = newEnemy.GetComponent<NavAgent>();
+            newEnemy.GetComponent<AiStatePatrol>().path = this.path;
+            var agent = newEnemy.GetComponent<NavAgent>();
             // Set speed offset
-            agent.speed = Random.Range(agent.speed * (1f - speedRandomizer), agent.speed * (1f + speedRandomizer));
+            agent.speed = Random.Range(agent.speed * (1f - this.speedRandomizer), agent.speed * (1f + this.speedRandomizer));
             // Add enemy to list
-            activeEnemies.Add(newEnemy);
+            this.activeEnemies.Add(newEnemy);
             // Wait for delay before next enemy run
-            yield return new WaitForSeconds(unitSpawnDelay);
+            yield return new WaitForSeconds(this.unitSpawnDelay);
         }
-        GetNextWave();
-        waveInProgress = false;
+        
+        this.gameState.wave += 0.5f;
+        this.signalBus.Fire<NextWaveSignal>();
+        this.GetNextWave();
+        this.waveInProgress = false;
     }
 
     /// <summary>
@@ -163,10 +182,10 @@ public class SpawnPoint : MonoBehaviour
     private void UnitDie(GameObject obj, string param)
     {
         // If this is active enemy
-        if (activeEnemies.Contains(obj) == true)
+        if (this.activeEnemies.Contains(obj))
         {
             // Remove it from buffer
-            activeEnemies.Remove(obj);
+            this.activeEnemies.Remove(obj);
         }
     }
 }

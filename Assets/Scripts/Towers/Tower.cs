@@ -11,7 +11,7 @@ public class Tower : MonoBehaviour
     public GameObject range;
 
     // User interface manager
-    private UiManager uiManager;
+    private UIManager uiManager;
     // Level UI canvas for building tree display
     private Canvas canvas;
     // Collider of this tower
@@ -24,8 +24,8 @@ public class Tower : MonoBehaviour
     /// </summary>
     void OnEnable()
     {
-        EventManager.StartListening("GamePaused", GamePaused);
-        EventManager.StartListening("UserClick", UserClick);
+        EventManager.StartListening("GamePaused", this.GamePaused);
+        EventManager.StartListening("UserClick", this.UserClick);
     }
 
     /// <summary>
@@ -33,8 +33,8 @@ public class Tower : MonoBehaviour
     /// </summary>
     void OnDisable()
     {
-        EventManager.StopListening("GamePaused", GamePaused);
-        EventManager.StopListening("UserClick", UserClick);
+        EventManager.StopListening("GamePaused", this.GamePaused);
+        EventManager.StopListening("UserClick", this.UserClick);
     }
 
     /// <summary>
@@ -42,18 +42,19 @@ public class Tower : MonoBehaviour
     /// </summary>
     void Awake()
     {
-        uiManager = FindObjectOfType<UiManager>();
-        Canvas[] canvases = FindObjectsOfType<Canvas>();
-        foreach (Canvas canv in canvases)
+        this.uiManager = FindObjectOfType<UIManager>();
+        var canvases = FindObjectsOfType<Canvas>();
+        foreach (var canv in canvases)
         {
             if (canv.CompareTag("LevelUI"))
             {
-                canvas = canv;
+                this.canvas = canv;
                 break;
             }
         }
-        bodyCollider = GetComponent<Collider2D>();
-        Debug.Assert(uiManager && canvas && bodyCollider, "Wrong initial parameters");
+
+        this.bodyCollider = this.GetComponent<Collider2D>();
+        Debug.Assert(this.uiManager && this.canvas && this.bodyCollider, "Wrong initial parameters");
     }
 
     /// <summary>
@@ -61,15 +62,15 @@ public class Tower : MonoBehaviour
     /// </summary>
     private void OpenBuildingTree()
     {
-        if (buildingTreePrefab != null)
+        if (this.buildingTreePrefab != null)
         {
             // Create building tree
-            activeBuildingTree = Instantiate<GameObject>(buildingTreePrefab, canvas.transform).GetComponent<BuildingTree>();
+            this.activeBuildingTree = Instantiate(this.buildingTreePrefab, this.canvas.transform).GetComponent<BuildingTree>();
             // Set it over the tower
-            activeBuildingTree.transform.position = Camera.main.WorldToScreenPoint(transform.position);
-            activeBuildingTree.myTower = this;
+            this.activeBuildingTree.transform.position = Camera.main.WorldToScreenPoint(this.transform.position);
+            this.activeBuildingTree.myTower               = this;
             // Disable tower raycast
-            bodyCollider.enabled = false;
+            this.bodyCollider.enabled = false;
         }
     }
 
@@ -78,11 +79,11 @@ public class Tower : MonoBehaviour
     /// </summary>
     private void CloseBuildingTree()
     {
-        if (activeBuildingTree != null)
+        if (this.activeBuildingTree != null)
         {
-            Destroy(activeBuildingTree.gameObject);
+            Destroy(this.activeBuildingTree.gameObject);
             // Enable tower raycast
-            bodyCollider.enabled = true;
+            this.bodyCollider.enabled = true;
         }
     }
 
@@ -93,17 +94,17 @@ public class Tower : MonoBehaviour
     public void BuildTower(GameObject towerPrefab)
     {
         // Close active building tree
-        CloseBuildingTree();
-        Price price = towerPrefab.GetComponent<Price>();
-        // If anough gold
-        if (uiManager.SpendGold(price.price) == true)
+        this.CloseBuildingTree();
+        var price = towerPrefab.GetComponent<Price>();
+        // If enough gold
+        if (this.uiManager.CanSpendGold(price.price))
         {
             // Create new tower and place it on same position
-            GameObject newTower = Instantiate<GameObject>(towerPrefab, transform.parent);
-            newTower.transform.position = transform.position;
-            newTower.transform.rotation = transform.rotation;
+            var newTower = Instantiate(towerPrefab, this.transform.parent);
+            newTower.transform.position = this.transform.position;
+            newTower.transform.rotation = this.transform.rotation;
             // Destroy old tower
-            Destroy(gameObject);
+            Destroy(this.gameObject);
         }
     }
 
@@ -116,12 +117,12 @@ public class Tower : MonoBehaviour
     {
         if (param == bool.TrueString) // Paused
         {
-            CloseBuildingTree();
-            bodyCollider.enabled = false;
+            this.CloseBuildingTree();
+            this.bodyCollider.enabled = false;
         }
         else // Unpaused
         {
-            bodyCollider.enabled = true;
+            this.bodyCollider.enabled = true;
         }
     }
 
@@ -132,22 +133,22 @@ public class Tower : MonoBehaviour
     /// <param name="param">Parameter.</param>
     private void UserClick(GameObject obj, string param)
     {
-        if (obj == gameObject) // This tower is clicked
+        if (obj == this.gameObject) // This tower is clicked
         {
             // Show attack range
-            ShowRange(true);
-            if (activeBuildingTree == null)
+            this.ShowRange(true);
+            if (this.activeBuildingTree == null)
             {
                 // Open building tree if it is not
-                OpenBuildingTree();
+                this.OpenBuildingTree();
             }
         }
         else // Other click
         {
             // Hide attack range
-            ShowRange(false);
+            this.ShowRange(false);
             // Close active building tree
-            CloseBuildingTree();
+            this.CloseBuildingTree();
         }
     }
 
@@ -157,9 +158,9 @@ public class Tower : MonoBehaviour
     /// <param name="condition">If set to <c>true</c> condition.</param>
     private void ShowRange(bool condition)
     {
-        if (range != null)
+        if (this.range != null)
         {
-            range.SetActive(condition);
+            this.range.SetActive(condition);
         }
     }
 }

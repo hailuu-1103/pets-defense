@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Plugins/Sirenix/Odin Inspector/Scripts/Editor/AssemblyImportSettingsAutomation.cs.meta
+guid: d4d815a2bfd253342bfd6542c08315fb
+timeCreated: 1533296750
+licenseType: Store
+========
+guid: 2f83f2c189527fc4d9abc16b603e6105
+>>>>>>>> origin/hailuu/develop/save-load-system:Assets/Scripts/Manage/UIManager.cs.meta
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
