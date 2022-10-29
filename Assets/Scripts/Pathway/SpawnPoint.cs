@@ -33,8 +33,7 @@ public class SpawnPoint : MonoBehaviour
     private GameState gameState;
 
     #endregion
-    // Enemies will have different speed in specified interval
-    public float speedRandomizer = 0.2f;
+   
     // Delay between enemies spawn in wave
     public float unitSpawnDelay = 0.8f;
     // Waves list for this spawner
@@ -159,9 +158,6 @@ public class SpawnPoint : MonoBehaviour
             var newEnemy = Instantiate(prefab, this.transform.position, this.transform.rotation, this.enemyHolder);
             // Set pathway
             newEnemy.GetComponent<AiStatePatrol>().path = this.path;
-            var agent = newEnemy.GetComponent<NavAgent>();
-            // Set speed offset
-            agent.speed = Random.Range(agent.speed * (1f - this.speedRandomizer), agent.speed * (1f + this.speedRandomizer));
             // Add enemy to list
             this.activeEnemies.Add(newEnemy);
             // Wait for delay before next enemy run

@@ -1,182 +1,189 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Ai.States;
 using UnityEngine;
 
-/// <summary>
-/// Main script to operate all AI states
-/// </summary>
-public class AiBehavior : MonoBehaviour
+namespace Ai
 {
-    // This state will be activate on start
-    public string defaultState;
-
-    // List with all states for this AI
-    private List<IAiState> aiStates = new List<IAiState>();
-    // The state that was before
-    private IAiState previousState;
-    // Active state
-    private IAiState currentState;
-
     /// <summary>
-    /// Start this instance.
+    /// Main script to operate all AI states
     /// </summary>
-    void Start()
+    public class AiBehavior : MonoBehaviour
     {
-        // Get all AI states from this gameobject
-        IAiState[] states = GetComponents<IAiState>();
-        if (states.Length > 0) 
+        // This state will be activate on start
+        public string defaultState;
+
+        // List with all states for this AI
+        private readonly List<IAiState> aiStates = new();
+
+        // The state that was before
+        private IAiState previousState;
+
+        // Active state
+        private IAiState currentState;
+
+        /// <summary>
+        /// Start this instance.
+        /// </summary>
+        private void Start()
         {
-            foreach (IAiState state in states)
+            // Get all AI states from this gameobject
+            var states = this.GetComponents<IAiState>();
+            if (states.Length > 0)
             {
-                // Add state to list
-                aiStates.Add(state);
-            }
-            if (defaultState != null)
-            {
-                // Set active and previous states as default state
-                previousState = currentState = GetComponent(defaultState) as IAiState;
-                if (currentState != null)
+                foreach (var state in states)
                 {
-                    // Go to active state
-                    ChangeState(currentState.GetType().ToString());
+                    // Add state to list
+                    this.aiStates.Add(state);
+                }
+
+                if (this.defaultState != null)
+                {
+                    // Set active and previous states as default state
+                    this.previousState = this.currentState = this.GetComponent(this.defaultState) as IAiState;
+                    if (this.currentState != null)
+                    {
+                        // Go to active state
+                        this.ChangeState(this.currentState.GetType().ToString());
+                    }
+                    else
+                    {
+                        Debug.LogError("Incorrect default AI state " + this.defaultState);
+                    }
                 }
                 else
                 {
-                    Debug.LogError("Incorrect default AI state " + defaultState);
+                    Debug.LogError("AI have no default state");
                 }
             }
             else
             {
-                Debug.LogError("AI have no default state");
+                Debug.LogError("No AI states found");
             }
-        } 
-        else 
-        {
-            Debug.LogError ("No AI states found");
         }
-    }
 
-    /// <summary>
-    /// Set AI to defalt state.
-    /// </summary>
-    public void GoToDefaultState()
-    {
-        previousState = currentState;
-        currentState = GetComponent(defaultState) as IAiState;
-        NotifyOnStateExit();
-        DisableAllStates();
-        EnableNewState();
-        NotifyOnStateEnter();
-    }
-
-    /// <summary>
-    /// Change Ai state.
-    /// </summary>
-    /// <param name="state">State.</param>
-    public void ChangeState(string state)
-    {
-        if (state != "")
+        /// <summary>
+        /// Set AI to defalt state.
+        /// </summary>
+        public void GoToDefaultState()
         {
-            // Try to find such state in list
-            foreach (IAiState aiState in aiStates)
+            this.previousState = this.currentState;
+            this.currentState  = this.GetComponent(this.defaultState) as IAiState;
+            this.NotifyOnStateExit();
+            this.DisableAllStates();
+            this.EnableNewState();
+            this.NotifyOnStateEnter();
+        }
+
+        /// <summary>
+        /// Change Ai state.
+        /// </summary>
+        /// <param name="state">State.</param>
+        public void ChangeState(string state)
+        {
+            if (state != "")
             {
-                if (state == aiState.GetType().ToString())
+                // Try to find such state in list
+                foreach (var aiState in this.aiStates)
                 {
-                    previousState = currentState;
-                    currentState = aiState;
-                    NotifyOnStateExit();
-                    DisableAllStates();
-                    EnableNewState();
-                    NotifyOnStateEnter();
-                    return;
+                    if (state == aiState.GetType().ToString())
+                    {
+                        this.previousState = this.currentState;
+                        this.currentState  = aiState;
+                        this.NotifyOnStateExit();
+                        this.DisableAllStates();
+                        this.EnableNewState();
+                        this.NotifyOnStateEnter();
+                        return;
+                    }
                 }
+
+                Debug.Log("No such state " + state);
+                // If have no such state - go to default state
+                this.GoToDefaultState();
+                Debug.Log("Go to default state " + this.aiStates[0].GetType().ToString());
             }
-            Debug.Log("No such state " + state);
-            // If have no such state - go to default state
-            GoToDefaultState();
-            Debug.Log("Go to default state " + aiStates[0].GetType().ToString());
         }
-    }
 
-    /// <summary>
-    /// Turn off all AI states components.
-    /// </summary>
-    private void DisableAllStates()
-    {
-        foreach (IAiState aiState in aiStates) 
+        /// <summary>
+        /// Turn off all AI states components.
+        /// </summary>
+        private void DisableAllStates()
         {
-            MonoBehaviour state = GetComponent(aiState.GetType().ToString()) as MonoBehaviour;
-            state.enabled = false;
+            foreach (var aiState in this.aiStates)
+            {
+                var state = this.GetComponent(aiState.GetType().ToString()) as MonoBehaviour;
+                state.enabled = false;
+            }
         }
-    }
 
-    /// <summary>
-    /// Turn on active AI state component.
-    /// </summary>
-    private void EnableNewState()
-    {
-        MonoBehaviour state = GetComponent(currentState.GetType().ToString()) as MonoBehaviour;
-        state.enabled = true;
-    }
-
-    /// <summary>
-    /// Send OnStateExit notification to previous state.
-    /// </summary>
-    private void NotifyOnStateExit()
-    {
-        string prev = previousState.GetType().ToString();
-        string active = currentState.GetType().ToString();
-        IAiState state = GetComponent(prev) as IAiState;
-        state.OnStateExit(prev, active);
-    }
-
-    /// <summary>
-    /// Send OnStateEnter notification to new state.
-    /// </summary>
-    private void NotifyOnStateEnter()
-    {
-        string prev = previousState.GetType().ToString();
-        string active = currentState.GetType().ToString();
-        IAiState state = GetComponent(active) as IAiState;
-        state.OnStateEnter(prev, active);
-    }
-
-    /// <summary>
-    /// Triggers the enter2d.
-    /// </summary>
-    /// <param name="my">My.</param>
-    /// <param name="other">Other.</param>
-    public void TriggerEnter2D(Collider2D my, Collider2D other)
-    {
-        if (LevelManager.IsCollisionValid(gameObject.tag, other.gameObject.tag) == true)
+        /// <summary>
+        /// Turn on active AI state component.
+        /// </summary>
+        private void EnableNewState()
         {
-            currentState.TriggerEnter(my, other);
+            var state = this.GetComponent(this.currentState.GetType().ToString()) as MonoBehaviour;
+            state.enabled = true;
         }
-    }
 
-    /// <summary>
-    /// Triggers the stay2d.
-    /// </summary>
-    /// <param name="my">My.</param>
-    /// <param name="other">Other.</param>
-    public void TriggerStay2D(Collider2D my, Collider2D other)
-    {
-        if (LevelManager.IsCollisionValid(gameObject.tag, other.gameObject.tag) == true)
+        /// <summary>
+        /// Send OnStateExit notification to previous state.
+        /// </summary>
+        private void NotifyOnStateExit()
         {
-            currentState.TriggerStay(my, other);
+            var prev   = this.previousState.GetType().ToString();
+            var active = this.currentState.GetType().ToString();
+            var state  = this.GetComponent(prev) as IAiState;
+            state.OnStateExit(prev, active);
         }
-    }
 
-    /// <summary>
-    /// Triggers the exit2d.
-    /// </summary>
-    /// <param name="my">My.</param>
-    /// <param name="other">Other.</param>
-    public void TriggerExit2D(Collider2D my, Collider2D other)
-    {
-        if (LevelManager.IsCollisionValid(gameObject.tag, other.gameObject.tag) == true)
+        /// <summary>
+        /// Send OnStateEnter notification to new state.
+        /// </summary>
+        private void NotifyOnStateEnter()
         {
-            currentState.TriggerExit(my, other);
+            var prev   = this.previousState.GetType().ToString();
+            var active = this.currentState.GetType().ToString();
+            var state  = this.GetComponent(active) as IAiState;
+            state.OnStateEnter(prev, active);
+        }
+
+        /// <summary>
+        /// Triggers the enter2d.
+        /// </summary>
+        /// <param name="my">My.</param>
+        /// <param name="other">Other.</param>
+        public void TriggerEnter2D(Collider2D my, Collider2D other)
+        {
+            if (LevelManager.IsCollisionValid(this.gameObject.tag, other.gameObject.tag))
+            {
+                this.currentState.TriggerEnter(my, other);
+            }
+        }
+
+        /// <summary>
+        /// Triggers the stay2d.
+        /// </summary>
+        /// <param name="my">My.</param>
+        /// <param name="other">Other.</param>
+        public void TriggerStay2D(Collider2D my, Collider2D other)
+        {
+            if (LevelManager.IsCollisionValid(this.gameObject.tag, other.gameObject.tag) == true)
+            {
+                this.currentState.TriggerStay(my, other);
+            }
+        }
+
+        /// <summary>
+        /// Triggers the exit2d.
+        /// </summary>
+        /// <param name="my">My.</param>
+        /// <param name="other">Other.</param>
+        public void TriggerExit2D(Collider2D my, Collider2D other)
+        {
+            if (LevelManager.IsCollisionValid(this.gameObject.tag, other.gameObject.tag) == true)
+            {
+                this.currentState.TriggerExit(my, other);
+            }
         }
     }
 }

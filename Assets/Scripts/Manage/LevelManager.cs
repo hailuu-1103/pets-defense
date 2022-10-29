@@ -9,8 +9,6 @@ public class LevelManager : MonoBehaviour
     private UIManager uiManager;
     // Nymbers of enemy spawners in this level
     private int spawnNumbers;
-
-    
     /// <summary>
     /// Awake this instance.
     /// </summary>
@@ -51,9 +49,18 @@ public class LevelManager : MonoBehaviour
     /// <param name="otherTag">Other tag.</param>
     public static bool IsCollisionValid(string myTag, string otherTag)
     {
-        bool res = false;
+        var res = false;
         switch (myTag)
         {
+            case "AirTower":
+                switch (otherTag)
+                {
+                    case "Fly":
+                        res = true;
+                        break;
+                }
+
+                break;
             case "Tower":
             case "Defender":
                 switch (otherTag)
@@ -66,7 +73,6 @@ public class LevelManager : MonoBehaviour
             case "Enemy":
                 switch (otherTag)
                 {
-                    case "Defender":
                     case "Tower":
                         res = true;
                         break;
@@ -75,7 +81,7 @@ public class LevelManager : MonoBehaviour
             case "Bullet":
                 switch (otherTag)
                 {
-                    case "Enemy":
+                    case "Enemy" or "Fly":
                         res = true;
                         break;
                 }

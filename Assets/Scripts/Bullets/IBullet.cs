@@ -7,6 +7,6 @@ using UnityEngine;
 /// </summary>
 public interface IBullet
 {
-    void SetDamage(int damage);
+    void SetDamage(float damage);
     void Fire(Transform target);
 }
