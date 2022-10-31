@@ -6,7 +6,8 @@ namespace Manage
 
     public class GameState : IInitializable
     {
-        public float             wave;
+        public float           wave;
+        public string          spawnPointIndex;
         public int             scoreCollected;
         public int             goldCollected;
         public List<TowerData> towers;

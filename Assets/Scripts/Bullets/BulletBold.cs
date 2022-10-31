@@ -3,7 +3,7 @@
 public class BulletBold : MonoBehaviour, IBullet
 {
     // Damage amount
-    public int damage = 1;
+    public float damage = 1;
     // Maximum life time
     public float lifeTime = 3f;
     // Starting speed
@@ -36,7 +36,7 @@ public class BulletBold : MonoBehaviour, IBullet
     /// Set damage amount for this bullet.
     /// </summary>
     /// <param name="damage">Damage.</param>
-    public void SetDamage(int damage)
+    public void SetDamage(float damage)
     {
         this.damage = damage;
     }
@@ -60,7 +60,7 @@ public class BulletBold : MonoBehaviour, IBullet
     /// <summary>
     /// Update this instance.
     /// </summary>
-    void Update()
+    private void Update()
     {
         counter += Time.deltaTime;
         // Add acceleration
@@ -136,16 +136,16 @@ public class BulletBold : MonoBehaviour, IBullet
     /// Damage targets on trigger enter
     /// </summary>
     /// <param name="other">Other.</param>
-    void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         // If collision allowed by scene
         if (LevelManager.IsCollisionValid(gameObject.tag, other.gameObject.tag) == true)
         {
             // If target can receive damage
-            DamageTaker damageTaker = other.GetComponent<DamageTaker> ();
-            if (damageTaker != null)
+            Enemy.Enemy enemy = other.GetComponent<Enemy.Enemy> ();
+            if (enemy != null)
             {
-                damageTaker.TakeDamage(damage);
+                enemy.TakeDamage(this.damage);
             }
         }
     }

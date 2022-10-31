@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Manage;
 using Signals;
 using TMPro;
@@ -8,6 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using Utils;
 using Zenject;
 
 /// <summary>
@@ -15,7 +17,15 @@ using Zenject;
 /// </summary>
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private Button saveBtn;
+    [SerializeField]             private Button     saveBtn;
+    [SerializeField]             private Button     loadBtn;
+    [SerializeField]             private Button     submitBtn;
+    [SerializeField]             private GameObject readInputObj;
+    [SerializeField] private GameObject          loadInputObj;
+    
+    [SerializeField]             private TMP_InputField inputField;
+    [SerializeField] private GameObject              layOutObj;
+    
 
     #region Zenject
 
@@ -39,10 +49,9 @@ public class UIManager : MonoBehaviour
 
     // Available gold amount
     [SerializeField] private TextMeshProUGUI goldTxt;
-
     [SerializeField] private TextMeshProUGUI waveTxt;
 
-
+    private List<TextMeshProUGUI> viewTexts = new();
     [Inject]
     private void Construct(SignalBus signal, SaveLoadSystem system, GameState state)
     {
@@ -61,7 +70,10 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.Subscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StartListening("UnitDie", this.UnitDie);
+
+        this.submitBtn.onClick.AddListener(this.OnClickSubmitButton);
         this.saveBtn.onClick.AddListener(this.OnClickSaveButton);
+        this.loadBtn.onClick.AddListener(this.OnClickLoadButton);
     }
 
     /// <summary>
@@ -71,7 +83,9 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.TryUnsubscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StopListening("UnitDie", this.UnitDie);
+        this.submitBtn.onClick.RemoveListener(this.OnClickSubmitButton);
         this.saveBtn.onClick.RemoveListener(this.OnClickSaveButton);
+        this.loadBtn.onClick.RemoveListener(this.OnClickLoadButton);
     }
 
     /// <summary>
@@ -84,9 +98,20 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        this.readInputObj.SetActive(false);
+        this.loadInputObj.SetActive(false);
         this.SetGold();
         this.GoToLevel();
         this.waveTxt.text = "1";
+        for (var i = 0; i < this.layOutObj.transform.childCount; i++)
+        {
+            this.viewTexts.Add(this.layOutObj.transform.GetChild(i).GetComponent<TextMeshProUGUI>());
+        }
+
+        foreach (var text in this.viewTexts)
+        {
+            text.text = "";
+        }
     }
 
     /// <summary>
@@ -305,7 +330,31 @@ public class UIManager : MonoBehaviour
 
     #region Callback
 
-    private void OnClickSaveButton() { this.saveLoadSystem.SaveToFile(); }
+    private void OnClickSaveButton()
+    {
+        this.readInputObj.SetActive(true);
+    }
+    private void OnClickSubmitButton()
+    {
+        // JsonUtil.Create("");
+        if (!this.inputField.text.Equals(""))
+        {
+            this.saveLoadSystem.SaveToFile(this.inputField.text);
+        }
+    }
+
+    private void OnClickLoadButton()
+    {
+        var folder   = new DirectoryInfo("Assets/StreamingAssets/TempData");
+        var fileInfos = folder.GetFiles();
+        for (var i = 0; i < fileInfos.Length; i++)
+        {
+            var file        = fileInfos[i];
+            this.layOutObj.transform.GetChild(i).GetComponent<TextMeshProUGUI>().text = file.Name.Contains(".meta") ? "" : file.Name.Replace(".json", "");
+        }
+        this.loadInputObj.SetActive(true);
+    }
+
 
     #endregion
 }

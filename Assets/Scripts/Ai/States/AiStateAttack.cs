@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Ai;
 using Ai.Attacks;
+using Ai.States;
 using UnityEngine;
 
 /// <summary>
@@ -10,42 +12,46 @@ public class AiStateAttack : MonoBehaviour, IAiState
 {
     // Attack target closest to the capture point
     public bool useTargetPriority = false;
+
     // Go to this state if agressive event occures
     public string agressiveAiState;
+
     // Go to this state if passive event occures
     public string passiveAiState;
 
 
     // AI behavior of this object
     private AiBehavior aiBehavior;
+
     // Target for attack
     private GameObject target;
+
     // List with potential targets finded during this frame
     private List<GameObject> targetsList = new List<GameObject>();
-    // My melee attack type if it is
-    private IAttack meleeAttack;
+
     // My ranged attack type if it is
     private IAttack rangedAttack;
 
     private IAttack magicAttack;
+
     // Type of last attack is made
     private IAttack myLastAttack;
+
     // My navigation agent if it is
-    NavAgent nav;
+    private NavAgent nav;
+
     // Allows to await new target for one frame before exit from this state
     private bool targetless;
 
     /// <summary>
     /// Awake this instance.
     /// </summary>
-    void Awake ()
+    private void Awake()
     {
-        this.aiBehavior   = this.GetComponent<AiBehavior> ();
-        this.meleeAttack  = this.GetComponentInChildren<AttackMelee>();
+        this.aiBehavior   = this.GetComponent<AiBehavior>();
         this.rangedAttack = this.GetComponentInChildren<AttackRanged>();
         this.magicAttack  = this.GetComponentInChildren<AttackMagic>();
         this.nav          = this.GetComponent<NavAgent>();
-        Debug.Assert ((this.aiBehavior != null) && ((this.meleeAttack != null) || (this.rangedAttack != null) || (this.magicAttack != null)), "Wrong initial parameters");
     }
 
     /// <summary>
@@ -53,25 +59,19 @@ public class AiStateAttack : MonoBehaviour, IAiState
     /// </summary>
     /// <param name="previousState">Previous state.</param>
     /// <param name="newState">New state.</param>
-    public void OnStateEnter (string previousState, string newState)
-    {
-
-    }
+    public void OnStateEnter(string previousState, string newState) { }
 
     /// <summary>
     /// Raises the state exit event.
     /// </summary>
     /// <param name="previousState">Previous state.</param>
     /// <param name="newState">New state.</param>
-    public void OnStateExit (string previousState, string newState)
-    {
-        this.LoseTarget();
-    }
+    public void OnStateExit(string previousState, string newState) { this.LoseTarget(); }
 
     /// <summary>
     /// FixedUpdate for this instance.
     /// </summary>
-    void FixedUpdate ()
+    private void FixedUpdate()
     {
         // If have no target - try to get new target
         if ((this.target == null) && (this.targetsList.Count > 0))
@@ -83,6 +83,7 @@ public class AiStateAttack : MonoBehaviour, IAiState
                 this.nav.LookAt(this.target.transform);
             }
         }
+
         // There are no targets around
         if (this.target == null)
         {
@@ -107,17 +108,17 @@ public class AiStateAttack : MonoBehaviour, IAiState
         GameObject res = null;
         if (this.useTargetPriority == true) // Get target with minimum distance to capture point
         {
-            float minPathDistance = float.MaxValue;
-            foreach (GameObject ai in this.targetsList)
+            var minPathDistance = float.MaxValue;
+            foreach (var ai in this.targetsList)
             {
                 if (ai != null)
                 {
-                    AiStatePatrol aiStatePatrol = ai.GetComponent<AiStatePatrol>();
-                    float distance = aiStatePatrol.GetRemainingPath();
+                    var aiStatePatrol = ai.GetComponent<AiStatePatrol>();
+                    var         distance      = aiStatePatrol.GetRemainingPath();
                     if (distance < minPathDistance)
                     {
                         minPathDistance = distance;
-                        res = ai;
+                        res             = ai;
                     }
                 }
             }
@@ -126,6 +127,7 @@ public class AiStateAttack : MonoBehaviour, IAiState
         {
             res = this.targetsList[0];
         }
+
         // Clear list of potential targets
         this.targetsList.Clear();
         return res;
@@ -136,9 +138,9 @@ public class AiStateAttack : MonoBehaviour, IAiState
     /// </summary>
     private void LoseTarget()
     {
-        this.target     = null;
-        this.targetless = false;
-        this.myLastAttack  = null;
+        this.target       = null;
+        this.targetless   = false;
+        this.myLastAttack = null;
     }
 
     /// <summary>
@@ -146,10 +148,7 @@ public class AiStateAttack : MonoBehaviour, IAiState
     /// </summary>
     /// <param name="my">My.</param>
     /// <param name="other">Other.</param>
-    public void TriggerEnter(Collider2D my, Collider2D other)
-    {
-
-    }
+    public void TriggerEnter(Collider2D my, Collider2D other) { }
 
     /// <summary>
     /// Triggers the stay.
@@ -167,46 +166,25 @@ public class AiStateAttack : MonoBehaviour, IAiState
             // If this is my current target
             if (this.target == other.gameObject)
             {
-                if (my.name == "MeleeAttack") // If target is in melee attack range
-                {
-                    // If I have melee attack type
-                    if (this.meleeAttack != null)
-                    {
-                        // Remember my last attack type
-                        this.myLastAttack = this.meleeAttack;
-                        // Try to make melee attack
-                        this.meleeAttack.Attack(other.transform);
-                    }
-                }
-                else if (my.name == "RangedAttack") // If target is in ranged attack range
+                if (my.name == "RangedAttack") // If target is in ranged attack range
                 {
                     // If I have ranged attack type
                     if (this.rangedAttack != null)
                     {
-                        // If target not in melee attack range
-                        if ((this.meleeAttack == null)
-                            || ((this.meleeAttack != null) && (this.myLastAttack != this.meleeAttack)))
-                        {
-                            // Remember my last attack type
-                            this.myLastAttack = this.rangedAttack;
-                            // Try to make ranged attack
-                            this.rangedAttack.Attack(other.transform);
-                        }
+                        // Remember my last attack type
+                        this.myLastAttack = this.rangedAttack;
+                        // Try to make ranged attack
+                        this.rangedAttack.Attack(other.transform);
                     }
                 }
                 else if (my.name == "MagicAttack")
                 {
                     if (this.magicAttack != null)
                     {
-                        // If target not in melee attack range
-                        if ((this.meleeAttack == null)
-                            || ((this.meleeAttack != null) && (this.myLastAttack != this.meleeAttack)))
-                        {
-                            // Remember my last attack type
-                            this.myLastAttack = this.magicAttack;
-                            // Try to make ranged attack
-                            this.magicAttack.Attack(other.transform);
-                        }
+                        // Remember my last attack type
+                        this.myLastAttack = this.magicAttack;
+                        // Try to make ranged attack
+                        this.magicAttack.Attack(other.transform);
                     }
                 }
             }
