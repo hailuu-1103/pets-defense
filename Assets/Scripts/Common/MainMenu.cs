@@ -37,7 +37,6 @@ namespace Common
         private void LoadGame()
         {
             
-            this.saveLoadSystem.ReadFromFile();
             SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
         }
         /// <summary>

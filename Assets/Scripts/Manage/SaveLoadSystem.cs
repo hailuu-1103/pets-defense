@@ -26,16 +26,16 @@ namespace Manage
             this.gameState = state;
             this.signalBus = signalBus;
         }
-        public void SaveToFile()
+        public void SaveToFile(string file)
         {
             this.SetUpTempData();
-            JsonUtil.Save(this.gameState, $"{FilePath}/Temp.json");
-            Debug.Log($"Save data to file: {FilePath}/Temp.json");
+            JsonUtil.Save(this.gameState, $"{FilePath}/{file}.json");
+            Debug.Log($"Save data to file: {FilePath}/{file}.json");
         }
-        public void ReadFromFile()
+        public void ReadFromFile(string file)
         {
-            this.gameState = JsonUtil.Load<GameState>($"{FilePath}/Temp.json");
-            Debug.Log($"Load data from file {FilePath}/Temp.json successfully!");
+            this.gameState = JsonUtil.Load<GameState>($"{FilePath}/{file}.json");
+            Debug.Log($"Load data from file {FilePath}/{file}.json successfully!");
         }
         private void SetUpTempData()
         {

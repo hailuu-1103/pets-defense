@@ -1,10 +1,15 @@
 namespace Utils
 {
     using System.IO;
+    using BestHTTP.Extensions;
     using Newtonsoft.Json;
 
     public static class JsonUtil
     {
+        public static void Create(string path)
+        {
+            File.Create(path);
+        }
         /// <summary>
         /// Save type T to file 
         /// </summary>
