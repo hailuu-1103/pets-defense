@@ -4,6 +4,7 @@ namespace GameData
     using GameFoundation.Scripts.AssetLibrary;
     using Manage;
     using UnityEngine;
+    using UnityEngine.SceneManagement;
     using Utils;
     using Zenject;
 

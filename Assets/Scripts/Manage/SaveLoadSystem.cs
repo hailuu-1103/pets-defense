@@ -12,7 +12,7 @@ namespace Manage
 
         #region Zenject
 
-        private GameState gameState;
+        public GameState gameState;
         private SignalBus signalBus;
 
         #endregion

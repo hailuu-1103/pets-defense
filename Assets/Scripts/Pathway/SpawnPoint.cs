@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using Manage;
 using Signals;
 using UnityEngine;
+using Utils;
 using Zenject;
 using Random = UnityEngine.Random;
 
@@ -50,7 +51,8 @@ public class SpawnPoint : MonoBehaviour
     // List for random enemy generation
     [SerializeField] private List<GameObject> enemyPrefabs = new();
     // Buffer with active spawned enemies
-    private List<GameObject> activeEnemies = new();
+    private          List<GameObject> activeEnemies = new();
+    private readonly string           Path          = "Assets/StreamingAssets/TempData/Temp.json";
 
     [Inject]
     private void Init(GameState state, SignalBus signal)
@@ -168,6 +170,15 @@ public class SpawnPoint : MonoBehaviour
         this.signalBus.Fire<NextWaveSignal>();
         this.GetNextWave();
         this.waveInProgress = false;
+    }
+
+    public void SpawnInLoad()
+    {
+        this.gameState = JsonUtil.Load<GameState>(this.Path);
+        foreach (var enemyData in this.gameState.enemies)
+        {
+            
+        }
     }
 
     /// <summary>
