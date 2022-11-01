@@ -6,8 +6,12 @@
     <type fullname="Enemy.Enemy" preserve="all" />
     <type fullname="HealthBar" preserve="all" />
     <type fullname="NavAgent" preserve="all" />
+    <type fullname="Pathway" preserve="all" />
     <type fullname="Price" preserve="all" />
+    <type fullname="SpawnPoint" preserve="all" />
     <type fullname="SpriteSorting" preserve="all" />
+    <type fullname="Waypoint" preserve="all" />
+    <type fullname="SpawnPoint/Wave" preserve="nothing" serialized="true" />
   </assembly>
   <assembly fullname="Unity.Addressables, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" preserve="all">
     <type fullname="UnityEngine.AddressableAssets.Addressables" preserve="all" />
