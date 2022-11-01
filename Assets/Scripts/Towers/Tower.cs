@@ -107,6 +107,8 @@ public class Tower : MonoBehaviour
             Destroy(this.gameObject);
         }
     }
+    
+
 
     /// <summary>
     /// Disable tower raycast and close building tree on game pause.
