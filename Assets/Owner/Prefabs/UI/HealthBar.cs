@@ -41,5 +41,19 @@ public class HealthBar : MonoBehaviour
 			burning.SetActive(true);
         }
     }
+    
+
+	public void DisableStatus(string status)
+	{
+		if (status.Equals("slow"))
+		{
+			slow.SetActive(false);
+
+		}
+		else if (status.Equals("burning"))
+		{
+			burning.SetActive(false);
+		}
+	}
 
 }

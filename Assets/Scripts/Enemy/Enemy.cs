@@ -97,7 +97,6 @@ namespace Enemy
 
         public void BurnDamage(float time, float damage)
         {
-            this.healthbar.SetStatus("burning");
 
             this.StartCoroutine(this.BurnDamage(damage));
         }
@@ -131,12 +130,17 @@ namespace Enemy
 
         private IEnumerator BurnDamage(float damage)
         {
-            while (true)
+            float x = 3;
+            while (x>0)
             {
+                this.healthbar.SetStatus("burning");
+
                 this.TakeDamage(damage);
+                x--;
                 yield return new WaitForSeconds(1);
             }
-        
+            this.healthbar.DisableStatus("burning");
         }
     }
 }
+
