@@ -17,6 +17,8 @@ using Zenject;
 /// </summary>
 public class UIManager : MonoBehaviour
 {
+
+    private AudioSource audioSource;
     [SerializeField]             private Button     saveBtn;
     [SerializeField]             private Button     loadBtn;
     [SerializeField]             private Button     submitBtn;
@@ -98,6 +100,9 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+        
+
         this.readInputObj.SetActive(false);
         this.loadInputObj.SetActive(false);
         this.SetGold();
