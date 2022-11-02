@@ -3,11 +3,20 @@ using UnityEngine;
 
 namespace Enemy
 {
+    
     /// <summary>
     /// This target can receive damage.
     /// </summary>
     public class Enemy : MonoBehaviour
     {
+        AudioSource AudioSound;
+        
+        public AudioClip HitSound;
+        public AudioClip DieSound;
+
+        public float volume = 0.5f;
+
+
         // Start health
         [SerializeField] private float health;
         // Remaining health
@@ -28,6 +37,7 @@ namespace Enemy
         /// </summary>
         private void Awake()
         {
+            AudioSound = GetComponent<AudioSource>();
 
             this.healthbar        = this.GetComponentInChildren<HealthBar>();
             this.currentHealth = this.health;
@@ -49,6 +59,9 @@ namespace Enemy
             {
                 // Still alive
                 this.currentHealth -= damage;
+
+                AudioSound.PlayOneShot(HitSound, volume);
+
                 this.healthbar.SetHealth(this.currentHealth);
 
                 // If no coroutine now
@@ -75,6 +88,9 @@ namespace Enemy
                 {
                     // Still alive
                     this.currentHealth -= damage;
+
+                    AudioSound.PlayOneShot(HitSound, volume);
+
                     this.healthbar.SetHealth(this.currentHealth);
                     this.healthbar.SetStatus("slow");
                     // If no coroutine now
@@ -106,6 +122,7 @@ namespace Enemy
         public void Die()
         {
             EventManager.TriggerEvent("UnitDie", this.gameObject, null);
+            AudioSound.PlayOneShot(DieSound, volume);
             Destroy(this.gameObject);
         }
 
@@ -134,8 +151,8 @@ namespace Enemy
             while (x>0)
             {
                 this.healthbar.SetStatus("burning");
-
                 this.TakeDamage(damage);
+                AudioSound.PlayOneShot(HitSound, volume);
                 x--;
                 yield return new WaitForSeconds(1);
             }
