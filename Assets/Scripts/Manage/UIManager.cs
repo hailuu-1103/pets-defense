@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using GameData;
-using Installer;
 using Manage;
 using Signals;
 using TMPro;
@@ -52,7 +50,7 @@ public class UIManager : MonoBehaviour
 
     private List<TextMeshProUGUI> viewTexts = new();
     [Inject]
-    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state, SpawnPoint spawner)
+    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state)
     {
         this.saveLoadSystem = system;
         this.gameState      = state;
