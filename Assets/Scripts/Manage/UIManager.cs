@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using GameData;
+using Installer;
 using Manage;
 using Signals;
 using TMPro;
@@ -23,49 +25,38 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button      submitBtn;
     [SerializeField] private Button      settingBtn;
     [SerializeField] private Button      resumeBtn;
+    [SerializeField] private Button      cancelBtn;
+    [SerializeField] private Button      quitBtn;
     
 
-    [SerializeField] private GameObject readInputObj;
-    [SerializeField] private GameObject loadInputObj;
-
-    [SerializeField] private TMP_InputField inputField;
-    [SerializeField] private GameObject     layOutObj;
-
-
-    #region Zenject
-
-    private PetsDefenseSceneDirector sceneDirector;
-    private SignalBus                signalBus;
-    private SaveLoadSystem           saveLoadSystem;
-    private GameState                gameState;
-    private SpawnPoint               spawnPoint;
-
-    #endregion
-
-    // Next level scene name
-    [SerializeField] private string nextLevel;
-
-    // Pause menu canvas
-    [SerializeField] private GameObject pauseMenu;
-
-    // Defeat menu canvas
-    [SerializeField] private GameObject defeatMenu;
-
-    // Level interface
-    [SerializeField] private GameObject levelUI;
-
-    // Available gold amount
+    [SerializeField] private GameObject      readInputObj;
+    [SerializeField] private GameObject      loadInputObj;
+    [SerializeField] private GameObject      layoutBase;
+    [SerializeField] private TMP_InputField  inputField;
+    [SerializeField] private GameObject      listFileObj;
+    [SerializeField] private GameObject      pauseMenu;
+    [SerializeField] private GameObject      defeatMenu;
+    [SerializeField] private GameObject      levelUI;
     [SerializeField] private TextMeshProUGUI goldTxt;
     [SerializeField] private TextMeshProUGUI waveTxt;
 
+    #region Zenject
+
+    private SignalBus      signalBus;
+    private SaveLoadSystem saveLoadSystem;
+    private GameState      gameState;
+    private SpawnPoint     spawnPoint;
+
+    #endregion
+
+
     private List<TextMeshProUGUI> viewTexts = new();
     [Inject]
-    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state, SpawnPoint spawner, PetsDefenseSceneDirector director)
+    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state, SpawnPoint spawner)
     {
         this.saveLoadSystem = system;
         this.gameState      = state;
         this.signalBus      = signal;
-        this.sceneDirector  = director;
         this.spawnPoint     = spawner;
     }
 
@@ -79,6 +70,8 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.Subscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StartListening("UnitDie", this.UnitDie);
+        this.quitBtn.onClick.AddListener(this.OnClickQuitButton);
+        this.cancelBtn.onClick.AddListener(this.OnClickCancelButton);
         this.resumeBtn.onClick.AddListener(this.OnClickResumeButton);
         this.settingBtn.onClick.AddListener(this.OnClickSettingBtn);
         this.submitBtn.onClick.AddListener(this.OnClickSubmitButton);
@@ -93,6 +86,8 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.TryUnsubscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StopListening("UnitDie", this.UnitDie);
+        this.quitBtn.onClick.RemoveListener(this.OnClickQuitButton);
+        this.cancelBtn.onClick.RemoveListener(this.OnClickCancelButton);
         this.resumeBtn.onClick.RemoveListener(this.OnClickResumeButton);
         this.settingBtn.onClick.RemoveListener(this.OnClickSettingBtn);
         this.submitBtn.onClick.RemoveListener(this.OnClickSubmitButton);
@@ -110,20 +105,14 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        audioSource = GetComponent<AudioSource>();
         this.readInputObj.SetActive(false);
         this.loadInputObj.SetActive(false);
         this.SetGold();
         this.GoToLevel();
-        this.waveTxt.text = "1";
-        for (var i = 0; i < this.layOutObj.transform.childCount; i++)
+        for (var i = 0; i < this.listFileObj.transform.childCount; i++)
         {
-            this.viewTexts.Add(this.layOutObj.transform.GetChild(i).GetComponent<TextMeshProUGUI>());
-        }
-
-        foreach (var text in this.viewTexts)
-        {
-            text.text = "";
+            var btn = this.listFileObj.transform.GetChild(i).GetComponent<Button>();
+            btn.onClick.AddListener(() => this.OnClickLoadFileButton(btn.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text));
         }
     }
 
@@ -279,11 +268,6 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Start next level.
-    /// </summary>
-    public void GoToNextLevel() { this.LoadScene(this.nextLevel); }
-
-    /// <summary>
     /// Restart current level.
     /// </summary>
     public void RestartLevel()
@@ -343,6 +327,11 @@ public class UIManager : MonoBehaviour
 
     #region Callback
 
+    private void OnClickCancelButton()
+    {
+        this.readInputObj.SetActive(false);
+        this.layoutBase.SetActive(true);
+    }
     private void OnClickResumeButton()
     {
         this.PauseGame(false);
@@ -356,7 +345,11 @@ public class UIManager : MonoBehaviour
         this.levelUI.SetActive(false);
         this.pauseMenu.SetActive(true);
     }
-    private void OnClickSaveButton() { this.readInputObj.SetActive(true); }
+    private void OnClickSaveButton()
+    {
+        this.layoutBase.SetActive(false);
+        this.readInputObj.SetActive(true);
+    }
     private void OnClickSubmitButton()
     {
         // JsonUtil.Create("");
@@ -368,19 +361,37 @@ public class UIManager : MonoBehaviour
 
     private void OnClickLoadButton()
     {
-        this.signalBus.Fire<LoadGameSignal>();
-        this.spawnPoint.SpawnFromWave();
-        // var folder    = new DirectoryInfo("Assets/StreamingAssets/TempData");
-        // var fileInfos = folder.GetFiles();
-        // for (var i = 0; i < fileInfos.Length; i++)
-        // {
-        //     var file = fileInfos[i];
-        //     this.layOutObj.transform.GetChild(i).GetComponent<TextMeshProUGUI>().text = file.Name.Contains(".meta") ? "" : file.Name.Replace(".json", "");
-        // }
-        //
-        // this.loadInputObj.SetActive(true);
+        var folder    = new DirectoryInfo("Assets/StreamingAssets/TempData");
+        var fileInfos = folder.GetFiles();
+        for (var i = 0; i < 5; i++)
+        {
+            var file = fileInfos[i];
+            this.listFileObj.transform.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>().text = file.Name.Contains(".meta") ? "" : file.Name.Replace(".json", "");
+        }
+
+        for (var i = 0; i < this.listFileObj.transform.childCount; i++)
+        {
+            var txt = this.listFileObj.transform.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>().text;
+            if (txt.Trim().Equals(""))
+            {
+                this.listFileObj.transform.GetChild(i).gameObject.SetActive(false);
+            }
+        }
+
+        this.loadInputObj.SetActive(true);
     }
 
+    private void OnClickLoadFileButton(string path)
+    {
+        this.signalBus.Fire<LoadGameSignal>();
+        this.spawnPoint.SpawnFromWave(path);
+        this.pauseMenu.SetActive(false);
+        this.levelUI.SetActive(true);
+    }
 
+    private void OnClickQuitButton()
+    {
+        Application.Quit();
+    }
     #endregion
 }

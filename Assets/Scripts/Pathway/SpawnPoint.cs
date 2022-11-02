@@ -53,7 +53,7 @@ public class SpawnPoint : MonoBehaviour
     [SerializeField] private List<GameObject> enemyPrefabs = new();
     // Buffer with active spawned enemies
     private          List<GameObject> activeEnemies = new();
-    private readonly string           Path          = "Assets/StreamingAssets/TempData/Temp.json";
+    private readonly string           Path          = "Assets/StreamingAssets/TempData/";
 
     [Inject]
     private void Init(IGameAssets assets, GameState state, SignalBus signal)
@@ -174,10 +174,10 @@ public class SpawnPoint : MonoBehaviour
         this.waveInProgress = false;
     }
 
-    public async void SpawnFromWave()
+    public async void SpawnFromWave(string path)
     {
         this.activeEnemies.Clear();
-        this.gameState = JsonUtil.Load<GameState>(this.Path);
+        this.gameState = JsonUtil.Load<GameState>(this.Path + path + ".json");
         for (var i = 0; i < this.enemyHolder.transform.childCount; i++)
         {
             Destroy(this.enemyHolder.GetChild(i).gameObject);
