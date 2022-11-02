@@ -107,7 +107,26 @@ public class Tower : MonoBehaviour
             Destroy(this.gameObject);
         }
     }
+
+    public void SellTower(GameObject towerPrefab)
+    {
+        // Close active building tree
+        this.CloseBuildingTree();
+        //var price = towerPrefab.GetComponent<Price>();
+        // If enough gold
+       //this.uiManager.CanSpendGold(price.price)
+        
+            // Create new tower and place it on same position
+            var newTower = Instantiate(towerPrefab, this.transform.parent);
+            newTower.transform.position = this.transform.position;
+            newTower.transform.rotation = this.transform.rotation;
+            // Destroy old tower
+            Destroy(this.gameObject);
+    }
     
+
+    
+
 
 
     /// <summary>
