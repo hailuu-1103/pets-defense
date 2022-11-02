@@ -24,7 +24,7 @@ namespace GameData
             this.saveLoadSystem = system;
             this.gameState      = state;
         }
-        public async void Spawn()
+        public async void SpawnEnemy()
         {
             this.gameState = JsonUtil.Load<GameState>(this.Path);
             foreach (var enemyData in this.gameState.enemies)

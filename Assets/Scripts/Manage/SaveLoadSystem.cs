@@ -12,13 +12,13 @@ namespace Manage
 
         #region Zenject
 
-        public GameState gameState;
+        public  GameState gameState;
         private SignalBus signalBus;
 
         #endregion
 
 
-        private const string       FilePath = "Assets/StreamingAssets/TempData";
+        private const string FilePath = "Assets/StreamingAssets/TempData";
 
         [Inject]
         public void Construct(GameState state, SignalBus signalBus)
@@ -44,7 +44,8 @@ namespace Manage
                 var enemy     = this.enemyHolder.GetChild(i);
                 var enemyName = enemy.name.Replace("(Clone)", "").Trim();
                 var enemyPos  = enemy.GetComponent<Transform>().position;
-                this.gameState.enemies.Add(new EnemyData { name = enemyName, horizontalPosition = enemyPos.x, verticalPosition = enemyPos.y });
+                // var enemyPath = enemy.GetComponent<AiStatePatrol>().path;
+                this.gameState.enemies.Add(new EnemyData { name = enemyName, horizontalPosition = enemyPos.x, verticalPosition = enemyPos.y,/* path = enemyPath*/ });
             }
         }
         public void Start() { this.gameState ??= new GameState(); }

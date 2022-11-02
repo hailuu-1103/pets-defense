@@ -14,7 +14,6 @@ namespace Installer
         public override void InstallBindings()
         {
             GameFoundationInstaller.Install(this.Container);
-
             this.Container.Rebind<BlueprintReaderManager>().AsCached();
 
             // Scene Director

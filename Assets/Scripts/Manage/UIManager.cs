@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using GameData;
+using Installer;
 using Manage;
 using Signals;
 using TMPro;
@@ -17,21 +19,28 @@ using Zenject;
 /// </summary>
 public class UIManager : MonoBehaviour
 {
-    [SerializeField]             private Button     saveBtn;
-    [SerializeField]             private Button     loadBtn;
-    [SerializeField]             private Button     submitBtn;
-    [SerializeField]             private GameObject readInputObj;
-    [SerializeField] private GameObject          loadInputObj;
+    public static            UIManager    Instance;
+    [SerializeField] private Button       saveBtn;
+    [SerializeField] private Button       loadBtn;
+    [SerializeField] private Button       submitBtn;
+    [SerializeField] private Button       settingBtn;
+    [SerializeField] private Button       resumeBtn;
     
-    [SerializeField]             private TMP_InputField inputField;
-    [SerializeField] private GameObject              layOutObj;
-    
+
+    [SerializeField] private GameObject readInputObj;
+    [SerializeField] private GameObject loadInputObj;
+
+    [SerializeField] private TMP_InputField inputField;
+    [SerializeField] private GameObject     layOutObj;
+
 
     #region Zenject
 
-    private SignalBus      signalBus;
-    private SaveLoadSystem saveLoadSystem;
-    private GameState      gameState;
+    private PetsDefenseSceneDirector sceneDirector;
+    private SignalBus                signalBus;
+    private SaveLoadSystem           saveLoadSystem;
+    private GameState                gameState;
+    private SpawnPoint               spawnPoint;
 
     #endregion
 
@@ -53,11 +62,13 @@ public class UIManager : MonoBehaviour
 
     private List<TextMeshProUGUI> viewTexts = new();
     [Inject]
-    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state)
+    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state, SpawnPoint spawner, PetsDefenseSceneDirector director)
     {
         this.saveLoadSystem = system;
         this.gameState      = state;
         this.signalBus      = signal;
+        this.sceneDirector  = director;
+        this.spawnPoint     = spawner;
     }
 
     // Is game paused?
@@ -70,7 +81,8 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.Subscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StartListening("UnitDie", this.UnitDie);
-
+        this.resumeBtn.onClick.AddListener(this.OnClickResumeButton);
+        this.settingBtn.onClick.AddListener(this.OnClickSettingBtn);
         this.submitBtn.onClick.AddListener(this.OnClickSubmitButton);
         this.saveBtn.onClick.AddListener(this.OnClickSaveButton);
         this.loadBtn.onClick.AddListener(this.OnClickLoadButton);
@@ -83,6 +95,8 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.TryUnsubscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StopListening("UnitDie", this.UnitDie);
+        this.resumeBtn.onClick.RemoveListener(this.OnClickResumeButton);
+        this.settingBtn.onClick.RemoveListener(this.OnClickSettingBtn);
         this.submitBtn.onClick.RemoveListener(this.OnClickSubmitButton);
         this.saveBtn.onClick.RemoveListener(this.OnClickSaveButton);
         this.loadBtn.onClick.RemoveListener(this.OnClickLoadButton);
@@ -91,7 +105,11 @@ public class UIManager : MonoBehaviour
     /// <summary>
     /// Awake this instance.
     /// </summary>
-    private void Awake() { Debug.Assert(this.pauseMenu && this.defeatMenu && this.levelUI && this.goldTxt, "Wrong initial parameters"); }
+    private void Awake()
+    {
+        Instance = this;
+        Debug.Assert(this.pauseMenu && this.defeatMenu && this.levelUI && this.goldTxt, "Wrong initial parameters");
+    }
 
     /// <summary>
     /// Start this instance.
@@ -330,10 +348,20 @@ public class UIManager : MonoBehaviour
 
     #region Callback
 
-    private void OnClickSaveButton()
+    private void OnClickResumeButton()
     {
-        this.readInputObj.SetActive(true);
+        this.PauseGame(false);
+        this.levelUI.SetActive(true);
+        this.pauseMenu.SetActive(false);
+
     }
+    private void OnClickSettingBtn()
+    {
+        this.PauseGame(true);
+        this.levelUI.SetActive(false);
+        this.pauseMenu.SetActive(true);
+    }
+    private void OnClickSaveButton() { this.readInputObj.SetActive(true); }
     private void OnClickSubmitButton()
     {
         // JsonUtil.Create("");
@@ -345,16 +373,18 @@ public class UIManager : MonoBehaviour
 
     private void OnClickLoadButton()
     {
-        var folder   = new DirectoryInfo("Assets/StreamingAssets/TempData");
-        var fileInfos = folder.GetFiles();
-        for (var i = 0; i < fileInfos.Length; i++)
-        {
-            var file        = fileInfos[i];
-            this.layOutObj.transform.GetChild(i).GetComponent<TextMeshProUGUI>().text = file.Name.Contains(".meta") ? "" : file.Name.Replace(".json", "");
-        }
-        this.loadInputObj.SetActive(true);
+        this.signalBus.Fire<LoadGameSignal>();
+        this.spawnPoint.SpawnFromWave();
+        // var folder    = new DirectoryInfo("Assets/StreamingAssets/TempData");
+        // var fileInfos = folder.GetFiles();
+        // for (var i = 0; i < fileInfos.Length; i++)
+        // {
+        //     var file = fileInfos[i];
+        //     this.layOutObj.transform.GetChild(i).GetComponent<TextMeshProUGUI>().text = file.Name.Contains(".meta") ? "" : file.Name.Replace(".json", "");
+        // }
+        //
+        // this.loadInputObj.SetActive(true);
     }
-
 
     #endregion
 }
