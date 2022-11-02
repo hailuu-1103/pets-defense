@@ -53,6 +53,7 @@ public class BuildingSell : MonoBehaviour
     
 
 
+
     /// <summary>
     /// On user click.
     /// </summary>
