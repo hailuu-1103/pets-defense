@@ -4,6 +4,7 @@ namespace Bullets
 {
     using Enemy;
 
+    
     /// <summary>
     /// Area Of Effect damage on destroing.
     /// </summary>
@@ -11,6 +12,9 @@ namespace Bullets
     {
         // Area radius
         public float radius = 0.3f;
+
+        public string effect;
+        
 
         // Damage amount
         public int damage = 3;
@@ -44,6 +48,7 @@ namespace Bullets
         /// </summary>
         private void OnDestroy()
         {
+
             // If scene is in progress
             if (this.isQuitting == false)
             {
@@ -58,7 +63,11 @@ namespace Bullets
                         Enemy enemy = col.gameObject.GetComponent<Enemy>();
                         if (enemy != null)
                         {
-                            enemy.TakeDamage(this.damage,"slow");
+                            if (effect.Equals("slow"))
+                            {
+                                enemy.TakeDamage(this.damage,"slow");
+                            }
+                            enemy.TakeDamage(this.damage);
                         }
                     }
                 }
