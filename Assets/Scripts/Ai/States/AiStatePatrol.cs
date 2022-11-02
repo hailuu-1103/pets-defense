@@ -1,14 +1,19 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Ai;
 using Ai.States;
+using Signals;
 using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// Allows AI to move with specified path.
 /// </summary>
 public class AiStatePatrol : MonoBehaviour, IAiState
 {
+    private SignalBus signalBus;
+    private bool      isPaused;
     // Specified path
     public Pathway path;
     // Need to loop path after last point is reached?
@@ -27,6 +32,8 @@ public class AiStatePatrol : MonoBehaviour, IAiState
     // Current destination
     private Waypoint destination;
 
+    [Inject]
+    private void Init(SignalBus signal) { this.signalBus = signal;}
     /// <summary>
     /// Awake this instance.
     /// </summary>
@@ -38,6 +45,13 @@ public class AiStatePatrol : MonoBehaviour, IAiState
         Debug.Assert (this.aiBehavior && this.navAgent, "Wrong initial parameters");
     }
 
+    private void OnEnable()
+    {
+    }
+    private void OnDisable()
+    {
+
+    }
     /// <summary>
     /// Raises the state enter event.
     /// </summary>
@@ -53,7 +67,6 @@ public class AiStatePatrol : MonoBehaviour, IAiState
         }
         if (this.destination == null)
         {
-            // Get next waypoint from my path
             this.destination = this.path.GetNearestWaypoint (this.transform.position);
         }
         // Set destination for navigation agent
