@@ -1,10 +1,11 @@
 fileFormatVersion: 2
 guid: cb8ab59f10f47f0489867b23922fe06a
-timeCreated: 1486576600
-licenseType: Store
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - HitSound: {instanceID: 0}
+  - DieSound: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
