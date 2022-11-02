@@ -289,6 +289,7 @@ public class UIManager : MonoBehaviour
     public void AddGold(int gold) { this.gameState.goldCollected += gold; SetGold(); }
     
 
+
     /// <summary>
     /// Spends the gold if it is.
     /// </summary>
