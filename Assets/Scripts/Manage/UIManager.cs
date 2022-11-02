@@ -286,7 +286,8 @@ public class UIManager : MonoBehaviour
     /// Adds the gold.
     /// </summary>
     /// <param name="gold">Gold.</param>
-    private void AddGold(int gold) { this.gameState.goldCollected += gold; }
+    public void AddGold(int gold) { this.gameState.goldCollected += gold; SetGold(); }
+    
 
     /// <summary>
     /// Spends the gold if it is.

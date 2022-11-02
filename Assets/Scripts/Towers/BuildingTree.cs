@@ -28,9 +28,10 @@ public class BuildingTree : MonoBehaviour
         myTower.BuildTower(prefab);
     }
 
-    public void Sell(GameObject prefab)
+    public void Sell(GameObject prefab,int price)
     {
-        myTower.SellTower(prefab);
+        myTower.SellTower(prefab,price);
     }
+    
 
 }

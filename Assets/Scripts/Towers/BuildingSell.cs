@@ -7,12 +7,13 @@ public class BuildingSell : MonoBehaviour
 
     // Tower prefab for this icon
     public GameObject towerPrefab;
+    
 
-    // Text field for tower price
-    private TextMeshProUGUI price;
     // Parent building tree
     private BuildingTree myTree;
 
+    [SerializeField]
+    private int price;
     /// <summary>
     /// Raises the enable event.
     /// </summary>
@@ -37,18 +38,8 @@ public class BuildingSell : MonoBehaviour
     {
         // Get building tree from parent object
         myTree = transform.GetComponentInParent<BuildingTree>();
-        price = GetComponentInChildren<TextMeshProUGUI>();
+
         //Debug.Assert(price && myTree, "Wrong initial parameters");
-        if (towerPrefab == null)
-        {
-            // If this icon have no tower prefab - hide icon
-            gameObject.SetActive(false);
-        }
-        else
-        {
-            // Display tower price
-            //price.text = towerPrefab.GetComponent<Price>().price.ToString();
-        }
     }
     
 
@@ -65,8 +56,9 @@ public class BuildingSell : MonoBehaviour
         if (obj == gameObject)
         {
             // Build the tower
-            myTree.Sell(towerPrefab);
+            myTree.Sell(towerPrefab,price);
         }
+
     }
 
 }
