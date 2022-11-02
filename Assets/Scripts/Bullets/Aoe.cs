@@ -58,7 +58,7 @@ namespace Bullets
                         Enemy enemy = col.gameObject.GetComponent<Enemy>();
                         if (enemy != null)
                         {
-                            enemy.TakeDamage(this.damage);
+                            enemy.TakeDamage(this.damage,"slow");
                         }
                     }
                 }

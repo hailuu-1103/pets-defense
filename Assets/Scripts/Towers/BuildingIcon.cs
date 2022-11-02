@@ -53,6 +53,7 @@ public class BuildingIcon : MonoBehaviour
         }
     }
 
+
     /// <summary>
     /// On user click.
     /// </summary>
