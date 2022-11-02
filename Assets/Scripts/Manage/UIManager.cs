@@ -17,41 +17,36 @@ using Zenject;
 /// </summary>
 public class UIManager : MonoBehaviour
 {
+    private                  AudioSource audioSource;
+    [SerializeField] private Button      saveBtn;
+    [SerializeField] private Button      loadBtn;
+    [SerializeField] private Button      submitBtn;
+    [SerializeField] private Button      settingBtn;
+    [SerializeField] private Button      resumeBtn;
+    [SerializeField] private Button      cancelBtn;
+    [SerializeField] private Button      quitBtn;
+    
 
-    private AudioSource audioSource;
-    [SerializeField]             private Button     saveBtn;
-    [SerializeField]             private Button     loadBtn;
-    [SerializeField]             private Button     submitBtn;
-    [SerializeField]             private GameObject readInputObj;
-    [SerializeField] private GameObject          loadInputObj;
-    
-    [SerializeField]             private TMP_InputField inputField;
-    [SerializeField] private GameObject              layOutObj;
-    
+    [SerializeField] private GameObject      readInputObj;
+    [SerializeField] private GameObject      loadInputObj;
+    [SerializeField] private GameObject      layoutBase;
+    [SerializeField] private TMP_InputField  inputField;
+    [SerializeField] private GameObject      listFileObj;
+    [SerializeField] private GameObject      pauseMenu;
+    [SerializeField] private GameObject      defeatMenu;
+    [SerializeField] private GameObject      levelUI;
+    [SerializeField] private TextMeshProUGUI goldTxt;
+    [SerializeField] private TextMeshProUGUI waveTxt;
 
     #region Zenject
 
     private SignalBus      signalBus;
     private SaveLoadSystem saveLoadSystem;
     private GameState      gameState;
+    private SpawnPoint     spawnPoint;
 
     #endregion
 
-    // Next level scene name
-    [SerializeField] private string nextLevel;
-
-    // Pause menu canvas
-    [SerializeField] private GameObject pauseMenu;
-
-    // Defeat menu canvas
-    [SerializeField] private GameObject defeatMenu;
-
-    // Level interface
-    [SerializeField] private GameObject levelUI;
-
-    // Available gold amount
-    [SerializeField] private TextMeshProUGUI goldTxt;
-    [SerializeField] private TextMeshProUGUI waveTxt;
 
     private List<TextMeshProUGUI> viewTexts = new();
     [Inject]
@@ -60,6 +55,7 @@ public class UIManager : MonoBehaviour
         this.saveLoadSystem = system;
         this.gameState      = state;
         this.signalBus      = signal;
+        this.spawnPoint     = spawner;
     }
 
     // Is game paused?
@@ -72,7 +68,10 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.Subscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StartListening("UnitDie", this.UnitDie);
-
+        this.quitBtn.onClick.AddListener(this.OnClickQuitButton);
+        this.cancelBtn.onClick.AddListener(this.OnClickCancelButton);
+        this.resumeBtn.onClick.AddListener(this.OnClickResumeButton);
+        this.settingBtn.onClick.AddListener(this.OnClickSettingBtn);
         this.submitBtn.onClick.AddListener(this.OnClickSubmitButton);
         this.saveBtn.onClick.AddListener(this.OnClickSaveButton);
         this.loadBtn.onClick.AddListener(this.OnClickLoadButton);
@@ -85,6 +84,10 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.TryUnsubscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StopListening("UnitDie", this.UnitDie);
+        this.quitBtn.onClick.RemoveListener(this.OnClickQuitButton);
+        this.cancelBtn.onClick.RemoveListener(this.OnClickCancelButton);
+        this.resumeBtn.onClick.RemoveListener(this.OnClickResumeButton);
+        this.settingBtn.onClick.RemoveListener(this.OnClickSettingBtn);
         this.submitBtn.onClick.RemoveListener(this.OnClickSubmitButton);
         this.saveBtn.onClick.RemoveListener(this.OnClickSaveButton);
         this.loadBtn.onClick.RemoveListener(this.OnClickLoadButton);
@@ -100,22 +103,14 @@ public class UIManager : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        audioSource = GetComponent<AudioSource>();
-        
-
         this.readInputObj.SetActive(false);
         this.loadInputObj.SetActive(false);
         this.SetGold();
         this.GoToLevel();
-        this.waveTxt.text = "1";
-        for (var i = 0; i < this.layOutObj.transform.childCount; i++)
+        for (var i = 0; i < this.listFileObj.transform.childCount; i++)
         {
-            this.viewTexts.Add(this.layOutObj.transform.GetChild(i).GetComponent<TextMeshProUGUI>());
-        }
-
-        foreach (var text in this.viewTexts)
-        {
-            text.text = "";
+            var btn = this.listFileObj.transform.GetChild(i).GetComponent<Button>();
+            btn.onClick.AddListener(() => this.OnClickLoadFileButton(btn.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text));
         }
     }
 
@@ -271,11 +266,6 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Start next level.
-    /// </summary>
-    public void GoToNextLevel() { this.LoadScene(this.nextLevel); }
-
-    /// <summary>
     /// Restart current level.
     /// </summary>
     public void RestartLevel()
@@ -293,8 +283,7 @@ public class UIManager : MonoBehaviour
     /// Adds the gold.
     /// </summary>
     /// <param name="gold">Gold.</param>
-    private void AddGold(int gold) { this.gameState.goldCollected += gold; SetGold(); }
-
+    private void AddGold(int gold) { this.gameState.goldCollected += gold; }
 
     /// <summary>
     /// Spends the gold if it is.
@@ -336,8 +325,27 @@ public class UIManager : MonoBehaviour
 
     #region Callback
 
+    private void OnClickCancelButton()
+    {
+        this.readInputObj.SetActive(false);
+        this.layoutBase.SetActive(true);
+    }
+    private void OnClickResumeButton()
+    {
+        this.PauseGame(false);
+        this.levelUI.SetActive(true);
+        this.pauseMenu.SetActive(false);
+
+    }
+    private void OnClickSettingBtn()
+    {
+        this.PauseGame(true);
+        this.levelUI.SetActive(false);
+        this.pauseMenu.SetActive(true);
+    }
     private void OnClickSaveButton()
     {
+        this.layoutBase.SetActive(false);
         this.readInputObj.SetActive(true);
     }
     private void OnClickSubmitButton()
@@ -351,16 +359,37 @@ public class UIManager : MonoBehaviour
 
     private void OnClickLoadButton()
     {
-        var folder   = new DirectoryInfo("Assets/StreamingAssets/TempData");
+        var folder    = new DirectoryInfo("Assets/StreamingAssets/TempData");
         var fileInfos = folder.GetFiles();
-        for (var i = 0; i < fileInfos.Length; i++)
+        for (var i = 0; i < 5; i++)
         {
-            var file        = fileInfos[i];
-            this.layOutObj.transform.GetChild(i).GetComponent<TextMeshProUGUI>().text = file.Name.Contains(".meta") ? "" : file.Name.Replace(".json", "");
+            var file = fileInfos[i];
+            this.listFileObj.transform.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>().text = file.Name.Contains(".meta") ? "" : file.Name.Replace(".json", "");
         }
+
+        for (var i = 0; i < this.listFileObj.transform.childCount; i++)
+        {
+            var txt = this.listFileObj.transform.GetChild(i).GetChild(0).GetComponent<TextMeshProUGUI>().text;
+            if (txt.Trim().Equals(""))
+            {
+                this.listFileObj.transform.GetChild(i).gameObject.SetActive(false);
+            }
+        }
+
         this.loadInputObj.SetActive(true);
     }
 
+    private void OnClickLoadFileButton(string path)
+    {
+        this.signalBus.Fire<LoadGameSignal>();
+        this.spawnPoint.SpawnFromWave(path);
+        this.pauseMenu.SetActive(false);
+        this.levelUI.SetActive(true);
+    }
 
+    private void OnClickQuitButton()
+    {
+        Application.Quit();
+    }
     #endregion
 }

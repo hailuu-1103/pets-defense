@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using GameFoundation.Scripts.AssetLibrary;
 using Manage;
 using Signals;
 using UnityEngine;
@@ -29,10 +30,10 @@ public class SpawnPoint : MonoBehaviour
     [SerializeField] private Transform enemyHolder;
 
     #region Zenject
-
-    private SignalBus signalBus;
-    private GameState gameState;
-
+    
+    private SignalBus   signalBus;
+    private GameState   gameState;
+    private IGameAssets gameAssets;
     #endregion
    
     // Delay between enemies spawn in wave
@@ -52,13 +53,14 @@ public class SpawnPoint : MonoBehaviour
     [SerializeField] private List<GameObject> enemyPrefabs = new();
     // Buffer with active spawned enemies
     private          List<GameObject> activeEnemies = new();
-    private readonly string           Path          = "Assets/StreamingAssets/TempData/Temp.json";
+    private readonly string           Path          = "Assets/StreamingAssets/TempData/";
 
     [Inject]
-    private void Init(GameState state, SignalBus signal)
+    private void Init(IGameAssets assets, GameState state, SignalBus signal)
     {
-        this.gameState = state;
-        this.signalBus = signal;
+        this.gameAssets = assets;
+        this.gameState  = state;
+        this.signalBus  = signal;
     }
     /// <summary>
     /// Awake this instance.
@@ -85,7 +87,7 @@ public class SpawnPoint : MonoBehaviour
     {
         EventManager.StopListening("UnitDie", this.UnitDie);
     }
-
+    
     /// <summary>
     /// Start this instance.
     /// </summary>
@@ -165,20 +167,32 @@ public class SpawnPoint : MonoBehaviour
             // Wait for delay before next enemy run
             yield return new WaitForSeconds(this.unitSpawnDelay);
         }
-        
-        this.gameState.wave += 0.5f;
+
+        this.gameState.wave            += 0.5f;
         this.signalBus.Fire<NextWaveSignal>();
         this.GetNextWave();
         this.waveInProgress = false;
     }
 
-    public void SpawnInLoad()
+    public async void SpawnFromWave(string path)
     {
-        this.gameState = JsonUtil.Load<GameState>(this.Path);
+        this.activeEnemies.Clear();
+        this.gameState = JsonUtil.Load<GameState>(this.Path + path + ".json");
+        for (var i = 0; i < this.enemyHolder.transform.childCount; i++)
+        {
+            Destroy(this.enemyHolder.GetChild(i).gameObject);
+        }
         foreach (var enemyData in this.gameState.enemies)
         {
-            
+            var enemy = Instantiate(await this.gameAssets.LoadAssetAsync<GameObject>(enemyData.name), 
+                new Vector3(enemyData.horizontalPosition, enemyData.verticalPosition, 0), 
+                Quaternion.identity,
+                this.enemyHolder);
+            this.activeEnemies.Add(enemy);
         }
+        this.signalBus.Fire<NextWaveSignal>();
+        this.GetNextWave();
+        this.waveInProgress = false;
     }
 
     /// <summary>

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Signals;
+using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// Moving and turning operation.
@@ -7,26 +9,28 @@ public class NavAgent : MonoBehaviour
 {
     // Speed im m/s
     public float speed = 1f;
+
     // Can moving
     public bool move = true;
+
     // Can turning
     public bool turn = true;
+
     // Destination position
-    [HideInInspector]
-    public Vector2 destination;
+    [HideInInspector] public Vector2 destination;
+
     // Velocity vector
-    [HideInInspector]
-    public Vector2 velocity;
+    [HideInInspector] public Vector2 velocity;
 
     // Position on last frame
     private Vector2 prevPosition;
-
+  
     /// <summary>
     /// Raises the enable event.
     /// </summary>
     void OnEnable()
     {
-        prevPosition = transform.position;
+        this.prevPosition = this.transform.position;
     }
 
     /// <summary>
@@ -35,21 +39,23 @@ public class NavAgent : MonoBehaviour
     void Update()
     {
         // If moving is allowed
-        if (move == true)
+        if (this.move)
         {
             // Move towards destination point
-            transform.position = Vector2.MoveTowards(transform.position, destination, speed * Time.deltaTime);
+            this.transform.position = Vector2.MoveTowards(this.transform.position, this.destination, this.speed * Time.deltaTime);
         }
+
         // Calculate velocity
-        Vector2 velocity = (Vector2)transform.position - prevPosition;
+        Vector2 velocity = (Vector2)this.transform.position - this.prevPosition;
         velocity /= Time.deltaTime;
         // If turning is allowed
-        if (turn == true)
+        if (this.turn == true)
         {
-            SetSpriteDirection(destination - (Vector2)transform.position);
+            this.SetSpriteDirection(this.destination - (Vector2)this.transform.position);
         }
+
         // Save last position
-        prevPosition = transform.position;
+        this.prevPosition = this.transform.position;
     }
 
     /// <summary>
@@ -58,13 +64,13 @@ public class NavAgent : MonoBehaviour
     /// <param name="direction">Direction.</param>
     private void SetSpriteDirection(Vector2 direction)
     {
-        if (direction.x > 0f && transform.localScale.x < 0f) // To the right
+        if (direction.x > 0f && this.transform.localScale.x < 0f) // To the right
         {
-            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+            this.transform.localScale = new Vector3(-this.transform.localScale.x, this.transform.localScale.y, this.transform.localScale.z);
         }
-        else if (direction.x < 0f && transform.localScale.x > 0f) // To the left
+        else if (direction.x < 0f && this.transform.localScale.x > 0f) // To the left
         {
-            transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+            this.transform.localScale = new Vector3(-this.transform.localScale.x, this.transform.localScale.y, this.transform.localScale.z);
         }
     }
 
@@ -72,17 +78,11 @@ public class NavAgent : MonoBehaviour
     /// Looks at direction.
     /// </summary>
     /// <param name="direction">Direction.</param>
-    public void LookAt(Vector2 direction)
-    {
-        SetSpriteDirection(direction);
-    }
+    public void LookAt(Vector2 direction) { this.SetSpriteDirection(direction); }
 
     /// <summary>
     /// Looks at target.
     /// </summary>
     /// <param name="target">Target.</param>
-    public void LookAt(Transform target)
-    {
-        SetSpriteDirection(target.position - transform.position);
-    }
+    public void LookAt(Transform target) { this.SetSpriteDirection(target.position - this.transform.position); }
 }
