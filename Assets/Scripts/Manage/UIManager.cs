@@ -50,13 +50,15 @@ public class UIManager : MonoBehaviour
 
     private List<TextMeshProUGUI> viewTexts = new();
     [Inject]
-    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state)
+    private void Construct(SignalBus signal, SaveLoadSystem system, GameState state,SpawnPoint spawner)
     {
         this.saveLoadSystem = system;
         this.gameState      = state;
         this.signalBus      = signal;
         this.spawnPoint     = spawner;
     }
+    
+
 
     // Is game paused?
     private bool paused;
