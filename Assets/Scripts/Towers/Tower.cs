@@ -9,6 +9,7 @@ public class Tower : MonoBehaviour
     public GameObject buildingTreePrefab;
     // Attack range of this tower
     public GameObject range;
+    
 
     // User interface manager
     private UIManager uiManager;

@@ -96,6 +96,24 @@ public class UIManager : MonoBehaviour
         this.loadBtn.onClick.RemoveListener(this.OnClickLoadButton);
     }
 
+    public bool isSpeedup = false;
+    public void SpeedUp()
+    {
+        if (isSpeedup)
+        {
+            Time.timeScale = 1;
+            isSpeedup = false;
+            return;
+        }
+
+        if (!isSpeedup)
+        {
+            Time.timeScale = 2;
+            isSpeedup = true;
+        }
+    }
+    
+
     /// <summary>
     /// Awake this instance.
     /// </summary>
