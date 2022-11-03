@@ -109,6 +109,25 @@ public class Tower : MonoBehaviour
     }
     
 
+    public void SellTower(GameObject towerPrefab,int price)
+    {
+        // Close active building tree
+        this.CloseBuildingTree();
+        // If enough gold
+        this.uiManager.AddGold(price);
+            // Create new tower and place it on same position
+            var newTower = Instantiate(towerPrefab, this.transform.parent);
+            newTower.transform.position = this.transform.position;
+            newTower.transform.rotation = this.transform.rotation;
+            // Destroy old tower
+            Destroy(this.gameObject);
+    }
+    
+    
+
+    
+
+
 
     /// <summary>
     /// Disable tower raycast and close building tree on game pause.

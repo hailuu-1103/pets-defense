@@ -70,7 +70,7 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.Subscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StartListening("UnitDie", this.UnitDie);
-        this.quitBtn.onClick.AddListener(this.OnClickQuitButton);
+        //this.quitBtn.onClick.AddListener(this.OnClickQuitButton);
         this.cancelBtn.onClick.AddListener(this.OnClickCancelButton);
         this.resumeBtn.onClick.AddListener(this.OnClickResumeButton);
         this.settingBtn.onClick.AddListener(this.OnClickSettingBtn);
@@ -78,6 +78,7 @@ public class UIManager : MonoBehaviour
         this.saveBtn.onClick.AddListener(this.OnClickSaveButton);
         this.loadBtn.onClick.AddListener(this.OnClickLoadButton);
     }
+    
 
     /// <summary>
     /// Raises the disable event.
@@ -86,7 +87,7 @@ public class UIManager : MonoBehaviour
     {
         this.signalBus.TryUnsubscribe<NextWaveSignal>(this.SetUpWaveText);
         EventManager.StopListening("UnitDie", this.UnitDie);
-        this.quitBtn.onClick.RemoveListener(this.OnClickQuitButton);
+        //this.quitBtn.onClick.RemoveListener(this.OnClickQuitButton);
         this.cancelBtn.onClick.RemoveListener(this.OnClickCancelButton);
         this.resumeBtn.onClick.RemoveListener(this.OnClickResumeButton);
         this.settingBtn.onClick.RemoveListener(this.OnClickSettingBtn);
@@ -285,7 +286,9 @@ public class UIManager : MonoBehaviour
     /// Adds the gold.
     /// </summary>
     /// <param name="gold">Gold.</param>
-    private void AddGold(int gold) { this.gameState.goldCollected += gold; }
+    public void AddGold(int gold) { this.gameState.goldCollected += gold; SetGold(); }
+    
+
 
     /// <summary>
     /// Spends the gold if it is.
