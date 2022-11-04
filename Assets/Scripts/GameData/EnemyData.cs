@@ -5,6 +5,5 @@ namespace GameData
         public string  name;
         public float   horizontalPosition;
         public float   verticalPosition;
-        // public Pathway path;
     }
 }

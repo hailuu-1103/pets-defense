@@ -1,47 +1,66 @@
-﻿using UnityEngine;
+﻿using System;
+using Cysharp.Threading.Tasks;
+using GameData;
+using GameFoundation.Scripts.AssetLibrary;
+using Manage;
+using Signals;
+using UnityEngine;
+using Zenject;
 
 /// <summary>
 /// Tower building and operation.
 /// </summary>
 public class Tower : MonoBehaviour
 {
+    private SignalBus      signalBus;
+    private GameState      gameState;
+    private DiContainer    diContainer;
+    private IGameAssets    gameAssets;
+    private SaveLoadSystem saveLoadSystem;
+
     // Prefab for building tree
     public GameObject buildingTreePrefab;
+
     // Attack range of this tower
     public GameObject range;
-    
 
     // User interface manager
     private UIManager uiManager;
+
     // Level UI canvas for building tree display
     private Canvas canvas;
+
     // Collider of this tower
     private Collider2D bodyCollider;
+
     // Displayed building tree
     private BuildingTree activeBuildingTree;
 
-    /// <summary>
-    /// Raises the enable event.
-    /// </summary>
-    void OnEnable()
+    [Inject]
+    private void Init(SignalBus signal, GameState state, IGameAssets assets, DiContainer container, SaveLoadSystem system)
     {
-        EventManager.StartListening("GamePaused", this.GamePaused);
-        EventManager.StartListening("UserClick", this.UserClick);
+        this.signalBus      = signal;
+        this.gameState      = state;
+        this.gameAssets     = assets;
+        this.diContainer    = container;
+        this.saveLoadSystem = system;
     }
-
-    /// <summary>
-    /// Raises the disable event.
-    /// </summary>
-    void OnDisable()
+    private void OnDisable()
     {
         EventManager.StopListening("GamePaused", this.GamePaused);
         EventManager.StopListening("UserClick", this.UserClick);
+    }
+    private void Start()
+    {
+        EventManager.StartListening("GamePaused", this.GamePaused);
+        EventManager.StartListening("UserClick", this.UserClick);
+        this.signalBus.Subscribe<LoadGameSignal>(this.OnLoadGame);
     }
 
     /// <summary>
     /// Awake this instance.
     /// </summary>
-    void Awake()
+    private void Awake()
     {
         this.uiManager = FindObjectOfType<UIManager>();
         var canvases = FindObjectsOfType<Canvas>();
@@ -69,7 +88,7 @@ public class Tower : MonoBehaviour
             this.activeBuildingTree = Instantiate(this.buildingTreePrefab, this.canvas.transform).GetComponent<BuildingTree>();
             // Set it over the tower
             this.activeBuildingTree.transform.position = Camera.main.WorldToScreenPoint(this.transform.position);
-            this.activeBuildingTree.myTower               = this;
+            this.activeBuildingTree.myTower            = this;
             // Disable tower raycast
             this.bodyCollider.enabled = false;
         }
@@ -104,30 +123,41 @@ public class Tower : MonoBehaviour
             var newTower = Instantiate(towerPrefab, this.transform.parent);
             newTower.transform.position = this.transform.position;
             newTower.transform.rotation = this.transform.rotation;
+            this.gameState.towers.Add(new TowerData() { name = towerPrefab.name, horizontalPosition = newTower.transform.position.x, verticalPosition = newTower.transform.position.y });
+            this.diContainer.InjectGameObject(newTower);
             // Destroy old tower
             Destroy(this.gameObject);
         }
     }
-    
 
-    public void SellTower(GameObject towerPrefab,int price)
+    private async void OnLoadGame()
+    {
+        this.saveLoadSystem.ReadFromFile("data");
+        foreach (var towerData in this.saveLoadSystem.gameState.towers)
+        {
+            if (this.transform.position.x != towerData.horizontalPosition || this.transform.position.y != towerData.verticalPosition) continue;
+            // Create new tower and place it on same position
+            var newTower = Instantiate(await this.gameAssets.LoadAssetAsync<GameObject>(towerData.name), this.transform.parent);
+            newTower.transform.position = this.transform.position;
+            newTower.transform.rotation = this.transform.rotation;
+            // Destroy old tower
+            // Destroy(this.gameObject);
+        }
+    }
+
+    public void SellTower(GameObject towerPrefab, int price)
     {
         // Close active building tree
         this.CloseBuildingTree();
         // If enough gold
         this.uiManager.AddGold(price);
-            // Create new tower and place it on same position
-            var newTower = Instantiate(towerPrefab, this.transform.parent);
-            newTower.transform.position = this.transform.position;
-            newTower.transform.rotation = this.transform.rotation;
-            // Destroy old tower
-            Destroy(this.gameObject);
+        // Create new tower and place it on same position
+        var newTower = Instantiate(towerPrefab, this.transform.parent);
+        newTower.transform.position = this.transform.position;
+        newTower.transform.rotation = this.transform.rotation;
+        // Destroy old tower
+        Destroy(this.gameObject);
     }
-    
-    
-
-    
-
 
 
     /// <summary>
