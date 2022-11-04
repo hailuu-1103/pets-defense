@@ -23,10 +23,6 @@ namespace Common
         {
             this.saveLoadSystem = system;
         }
-        private void OnEnable()
-        {
-            this.loadGameBtn.onClick.AddListener(this.LoadGame);
-        }
         /// <summary>
         /// Load level.
         /// </summary>
@@ -34,11 +30,7 @@ namespace Common
         {
             SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
         }
-        private void LoadGame()
-        {
-            
-            SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-        }
+       
         /// <summary>
         /// Close application.
         /// </summary>
