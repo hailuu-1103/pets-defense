@@ -3,7 +3,7 @@ namespace GameData
     public class TowerData
     {
         public string name;
-        public int    index;
-        public int    level;
+        public float  horizontalPosition;
+        public float  verticalPosition;
     }
 }

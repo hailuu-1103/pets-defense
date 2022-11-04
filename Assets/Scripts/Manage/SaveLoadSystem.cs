@@ -44,7 +44,6 @@ namespace Manage
                 var enemy     = this.enemyHolder.GetChild(i);
                 var enemyName = enemy.name.Replace("(Clone)", "").Trim();
                 var enemyPos  = enemy.GetComponent<Transform>().position;
-                // var enemyPath = enemy.GetComponent<AiStatePatrol>().path;
                 this.gameState.enemies.Add(new EnemyData { name = enemyName, horizontalPosition = enemyPos.x, verticalPosition = enemyPos.y,/* path = enemyPath*/ });
             }
         }
