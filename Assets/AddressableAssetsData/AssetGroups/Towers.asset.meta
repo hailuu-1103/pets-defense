@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/AddressableAssetsData/AssetGroups/Towers.asset.meta
 guid: 20a75ff0c37d34c49a189f1de40a7e64
+========
+guid: a3cc06a8918249647bfd22101a6b1ab2
+>>>>>>>> origin/hailuu/develop/save:Assets/AddressableAssetsData/AssetGroups/Schemas/Towers_ContentUpdateGroupSchema.asset.meta
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 11400000

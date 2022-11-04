@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Owner/Prefabs/Background/280361962_690188075389992_4499088664645344840_n (1) 1_2.asset.meta
 guid: e1e1080cc02d81840b1f21c8dcb3e9b8
+========
+guid: 20a75ff0c37d34c49a189f1de40a7e64
+>>>>>>>> origin/hailuu/develop/save:Assets/AddressableAssetsData/AssetGroups/Towers.asset.meta
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 11400000
