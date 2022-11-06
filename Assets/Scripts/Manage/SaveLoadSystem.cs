@@ -29,13 +29,14 @@ namespace Manage
         public void SaveToFile(string file)
         {
             this.SetUpTempData();
-            JsonUtil.Save(this.gameState, $"{FilePath}/{file}.json");
-            Debug.Log($"Save data to file: {FilePath}/{file}.json");
+            JsonUtil.Save(this.gameState, $"{Application.persistentDataPath}/{file}.json");
+            Debug.Log($"Save data to file: {Application.persistentDataPath}/{file}.json");
         }
+
         public void ReadFromFile(string file)
         {
-            this.gameState = JsonUtil.Load<GameState>($"{FilePath}/{file}.json");
-            Debug.Log($"Load data from file {FilePath}/{file}.json successfully!");
+            this.gameState = JsonUtil.Load<GameState>($"{Application.persistentDataPath}/{file}.json");
+            Debug.Log($"Load data from file {Application.persistentDataPath}/{file}.json successfully!");
         }
         private void SetUpTempData()
         {
